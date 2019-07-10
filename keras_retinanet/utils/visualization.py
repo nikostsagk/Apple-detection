@@ -20,7 +20,7 @@ import numpy as np
 from .colors import label_color
 
 
-def draw_box(image, box, color, thickness=2):
+def draw_box(image, box, color, thickness=1):
     """ Draws a box on an image with a given color.
 
     # Arguments
