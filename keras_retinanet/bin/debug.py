@@ -210,11 +210,11 @@ def run(generator, args, anchor_params):
         cv2.imshow('Image', image)
         key = cv2.waitKey()
         # note that the right and left keybindings are probably different for windows
-        # press right for next image
-        if key == 83:
+        # press right for next image and left for previous (linux)
+        if key == 110: # -> macOS 'n'
             i += 1
         # press left for previous image
-        if key == 81:
+        if key == 109: # -> macOS 'm'
             i -= 1
         # press q to quit
         if key == ord('q'):
