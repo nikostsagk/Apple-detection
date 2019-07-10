@@ -17,6 +17,7 @@ limitations under the License.
 """
 
 import argparse
+import ntpath
 import os
 import sys
 import cv2
@@ -34,7 +35,7 @@ from ..preprocessing.kitti import KittiGenerator
 from ..preprocessing.open_images import OpenImagesGenerator
 from ..utils.keras_version import check_keras_version
 from ..utils.transform import random_transform_generator
-from ..utils.visualization import draw_annotations, draw_boxes
+from ..utils.visualization import draw_annotations, draw_boxes, draw_caption
 from ..utils.anchors import anchors_for_shape, compute_gt_annotations
 from ..utils.config import read_config_file, parse_anchor_parameters
 
@@ -154,6 +155,7 @@ def parse_args(args):
     parser.add_argument('-l', '--loop', help='Loop forever, even if the dataset is exhausted.', action='store_true')
     parser.add_argument('--no-resize', help='Disable image resizing.', dest='resize', action='store_false')
     parser.add_argument('--anchors', help='Show positive anchors on the image.', action='store_true')
+    parser.add_argument('--display-name', help='Display image name on the upper left corner.', dest='name', action='store_true')
     parser.add_argument('--annotations', help='Show annotations on the image. Green annotations have anchors, red annotations don\'t and therefore don\'t contribute to training.', action='store_true')
     parser.add_argument('--random-transform', help='Randomly transform image and annotations.', action='store_true')
     parser.add_argument('--image-min-side', help='Rescale the image so the smallest side is min_side.', type=int, default=800)
@@ -200,7 +202,11 @@ def run(generator, args, anchor_params):
                 # draw regressed anchors in green to override most red annotations
                 # result is that annotations without anchors are red, with anchors are green
                 draw_boxes(image, annotations['bboxes'][max_indices[positive_indices], :], (0, 255, 0))
-
+	
+            # display name on the image	
+            if args.name:	
+                draw_caption(image, [10, 25], ntpath.basename(generator.image_path(i)))
+                
         cv2.imshow('Image', image)
         key = cv2.waitKey()
         # note that the right and left keybindings are probably different for windows
