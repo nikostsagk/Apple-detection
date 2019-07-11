@@ -182,35 +182,26 @@ def create_callbacks(model, training_model, prediction_model, validation_generat
         callbacks.append(evaluation)
 
     # save the model
+    makedirs(args.snapshot_path)
     if args.snapshots:
         # ensure directory created first; otherwise h5py will error after epoch.
-        makedirs(args.snapshot_path)
-        checkpoint = keras.callbacks.ModelCheckpoint(
-            os.path.join(
-                args.snapshot_path,
-                '{backbone}_{dataset_type}_{{epoch:02d}}.h5'.format(backbone=args.backbone, dataset_type=args.dataset_type)
-            ),
-            verbose=1,
-            # save_best_only=True,
-            # monitor="mAP",
-            # mode='max'
+        checkpoint_path = os.path.join(
+            args.snapshot_path,
+            '{backbone}_{dataset_type}_{{epoch:02d}}.h5'.format(backbone=args.backbone, dataset_type=args.dataset_type)
         )
-        checkpoint = RedirectModel(checkpoint, model)
-        callbacks.append(checkpoint)
-    else: #very naive
-    	makedirs(args.snapshot_path)
-        checkpoint = keras.callbacks.ModelCheckpoint(
-            os.path.join(
-                args.snapshot_path,
-                '{backbone}_{dataset_type}_{epoch}.h5'.format(backbone=args.backbone, dataset_type=args.dataset_type, epoch=args.epochs)
-            ),
-            verbose=1,
-            # save_best_only=True,
-            # monitor="mAP",
-            # mode='max'
+    else:
+    	checkpoint_path = os.path.join(
+            args.snapshot_path,
+            '{backbone}_{dataset_type}_{epochs}.h5'.format(backbone=args.backbone, dataset_type=args.dataset_type, epochs=args.epochs)
         )
-        checkpoint = RedirectModel(checkpoint, model)
-        callbacks.append(checkpoint)
+
+    checkpoint = keras.callbacks.ModelCheckpoint(checkpoint_path, verbose=1,
+        # save_best_only=True,
+        # monitor="mAP",
+        # mode='max'
+    )
+    checkpoint = RedirectModel(checkpoint, model)
+    callbacks.append(checkpoint)
 
     callbacks.append(keras.callbacks.ReduceLROnPlateau(
         monitor    = 'loss',
