@@ -173,7 +173,8 @@ def run(generator, args, anchor_params):
         args: parseargs args object.
     """
     # display images, one at a time
-    for i in range(generator.size()):
+    i=0
+    while True:
         # load the data
         image       = generator.load_image(i)
         annotations = generator.load_annotations(i)
@@ -209,17 +210,23 @@ def run(generator, args, anchor_params):
                 
         cv2.imshow('Image', image)
         key = cv2.waitKey()
-        # doesn't work
+
         ## note that the right and left keybindings are probably different for windows
         ## press right for next image and left for previous (linux)
-        #if key == 110: # -> macOS 'n'
-        #    i += 1
-        ## press left for previous image
-        #if key == 109: # -> macOS 'm'
-        #    i -= 1
+        ## macOS: previous = 'n' | next = 'm'
+
+        if key == 109:
+            i += 1
+            if i == (generator.size() - 1): # Terminate after last image.
+                return False
+        if key == 110:
+            i -= 1
+            if i < 0:                # Don't let i be less than "0".
+                i = 0
         ## press q to quit
         if key == ord('q'):
             return False
+            
     return True
 
 
