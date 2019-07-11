@@ -66,7 +66,7 @@ def preprocess_image(x, mode='caffe'):
         x[..., 1] -= 121.3656
         x[..., 2] -= 104.9435
     elif mode == 'zcs':
-        X = 2. * (X - 3.) / (255. - 3.) - 1.
+        x = 2. * (x - 3.) / (255. - 3.) - 1.
 
     return x
 

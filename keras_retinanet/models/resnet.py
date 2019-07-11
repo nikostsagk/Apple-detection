@@ -72,7 +72,7 @@ class ResNetBackbone(Backbone):
     def preprocess_image(self, inputs):
         """ Takes as input an image and prepares it for being passed through the network.
         """
-        return preprocess_image(inputs, mode='zcs')
+        return preprocess_image(inputs, mode='caffe')
 
 
 def resnet_retinanet(num_classes, backbone='resnet50', inputs=None, modifier=None, **kwargs):

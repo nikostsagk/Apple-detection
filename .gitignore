@@ -5,5 +5,6 @@ __pycache__/
 /.pytest_cache
 /.cache
 *.h5
-data/images/*
 *.zip
+data/*
+*.sh
