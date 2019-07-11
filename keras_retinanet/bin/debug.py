@@ -214,10 +214,8 @@ def run(generator, args, anchor_params):
         # if you run macOS, it might be convenient using "n" and "m" key (key == 110 and key == 109)
 
         if key == 109:
-            print(key, i)
             i = (i + 1) % generator.size()
         if key == 110:
-            print(key, i)
             i -= 1
             if i < 0: i = generator.size() - 1
         # press q or Esc to quit
