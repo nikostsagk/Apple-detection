@@ -123,7 +123,7 @@ def create_models(backbone_retinanet, num_classes, weights, multi_gpu=0,
     prediction_model = retinanet_bbox(model=model, anchor_params=anchor_params)
 
     # create optimiser
-    optimizer=keras.optimizers.adam(lr=lr, clipnorm=args.clipnorm)
+    optimizer=keras.optimizers.adam(lr=lr, clipnorm=1.)
     if sgd:
     	optimizer=keras.optimizers.SGD(lr=lr, momentum=momentum, clipnorm=1.)
 
