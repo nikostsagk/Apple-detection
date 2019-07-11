@@ -8,3 +8,5 @@ __pycache__/
 *.zip
 data/*
 *.sh
+results/
+imagenet-weights/
