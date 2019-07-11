@@ -122,15 +122,18 @@ def create_models(backbone_retinanet, num_classes, weights, multi_gpu=0,
     # make prediction model
     prediction_model = retinanet_bbox(model=model, anchor_params=anchor_params)
 
+    # create optimiser
+    optimizer=keras.optimizers.adam(lr=lr, clipnorm=args.clipnorm)
+    if sgd:
+    	optimizer=keras.optimizers.SGD(lr=lr, momentum=momentum, clipnorm=1.)
+
     # compile model
     training_model.compile(
         loss={
             'regression'    : losses.smooth_l1(),
             'classification': losses.focal(alpha=alpha, gamma=gamma)
         },
-        optimizer=keras.optimizers.adam(lr=lr, clipnorm=args.clipnorm)
-        if sgd:
-        	optimizer=keras.optimizers.SGD(lr=lr, momentum=momentum, clipnorm=1.)
+        optimizer=optimizer        
     )
 
     return model, training_model, prediction_model
@@ -186,6 +189,20 @@ def create_callbacks(model, training_model, prediction_model, validation_generat
             os.path.join(
                 args.snapshot_path,
                 '{backbone}_{dataset_type}_{{epoch:02d}}.h5'.format(backbone=args.backbone, dataset_type=args.dataset_type)
+            ),
+            verbose=1,
+            # save_best_only=True,
+            # monitor="mAP",
+            # mode='max'
+        )
+        checkpoint = RedirectModel(checkpoint, model)
+        callbacks.append(checkpoint)
+    else: #very naive
+    	makedirs(args.snapshot_path)
+        checkpoint = keras.callbacks.ModelCheckpoint(
+            os.path.join(
+                args.snapshot_path,
+                '{backbone}_{dataset_type}_{epoch}.h5'.format(backbone=args.backbone, dataset_type=args.dataset_type, epoch=args.epochs)
             ),
             verbose=1,
             # save_best_only=True,
@@ -525,6 +542,6 @@ def main(args=None):
         validation_data=validation_generator
     )
 
-    
+
 if __name__ == '__main__':
     main()
