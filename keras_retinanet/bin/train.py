@@ -22,6 +22,7 @@ import sys
 import warnings
 
 import keras
+import keras.regularizers.Regularizer
 import keras.preprocessing.image
 import tensorflow as tf
 
@@ -82,7 +83,7 @@ def model_with_weights(model, weights, skip_mismatch):
 
 
 def create_models(backbone_retinanet, num_classes, weights, multi_gpu=0,
-                  freeze_backbone=False, lr=1e-5, momentum=0.9, sgd=False, alpha=0.25, gamma=2.0, config=None):
+                  freeze_backbone=False, lr=1e-5, momentum=0.9, sgd=False, weight_decay=1e-4, alpha=0.25, gamma=2.0, config=None):
     """ Creates three models (model, training_model, prediction_model).
 
     Args
@@ -114,17 +115,27 @@ def create_models(backbone_retinanet, num_classes, weights, multi_gpu=0,
         from keras.utils import multi_gpu_model
         with tf.device('/cpu:0'):
             model = model_with_weights(backbone_retinanet(num_classes, num_anchors=num_anchors, modifier=modifier), weights=weights, skip_mismatch=True)
+            
+            # Add weight decay (L2 regularization)
+            for layer in model.layers:
+                layers.kernel_regularizer = keras.regularizers.l2(5e-6)
         training_model = multi_gpu_model(model, gpus=multi_gpu)
     else:
         model          = model_with_weights(backbone_retinanet(num_classes, num_anchors=num_anchors, modifier=modifier), weights=weights, skip_mismatch=True)
+        
+        # Add weight decay (L2 regularization)
+        for layer in model.layers:
+            layers.kernel_regularizer = keras.regularizers.l2(5e-6)
+
         training_model = model
 
     # make prediction model
     prediction_model = retinanet_bbox(model=model, anchor_params=anchor_params)
 
-    # create optimiser
-    optimizer=keras.optimizers.adam(lr=lr, clipnorm=1.)
-    if sgd:
+    # create optimizer
+    if not sgd:
+        optimizer=keras.optimizers.adam(lr=lr, clipnorm=1.)
+    else:
     	optimizer=keras.optimizers.SGD(lr=lr, momentum=momentum, clipnorm=1.)
 
     # compile model
@@ -418,11 +429,6 @@ def parse_args(args):
     parser.add_argument('--multi-gpu-force',  help='Extra flag needed to enable (experimental) multi-gpu support.', action='store_true')
     parser.add_argument('--epochs',           help='Number of epochs to train.', type=int, default=50)
     parser.add_argument('--steps',            help='Number of steps per epoch.', type=int, default=10000)
-    parser.add_argument('--lr',               help='Learning rate.', type=float, default=1e-5)
-    parser.add_argument('--momentum',         help='Momentum.', type=float, default=0.9)
-    parser.add_argument('--sgd',              help='Change optimizer to SGD. Default is Adam.', action='store_true')
-    parser.add_argument('--alpha',            help='Alpha parameter in focal loss.', type=float, default=0.25)
-    parser.add_argument('--gamma',            help='Gamma parameter in focal loss.', type=float, default=2.0)
     parser.add_argument('--snapshot-path',    help='Path to store snapshots of models during training (defaults to \'./snapshots\')', default='./snapshots')
     parser.add_argument('--tensorboard-dir',  help='Log directory for Tensorboard output', default='./logs')
     parser.add_argument('--no-snapshots',     help='Disable saving snapshots.', dest='snapshots', action='store_false')
@@ -434,6 +440,15 @@ def parse_args(args):
     parser.add_argument('--config',           help='Path to a configuration parameters .ini file.')
     parser.add_argument('--weighted-average', help='Compute the mAP using the weighted average of precisions among classes.', action='store_true')
     parser.add_argument('--compute-val-loss', help='Compute validation loss during training', dest='compute_val_loss', action='store_true')
+
+    #Optimizer arguments
+    parser.add_argument('--lr', help='Learning rate.', type=float, default=1e-5)
+    parser.add_argument('--momentum', help='Momentum.', type=float, default=0.9)
+    parser.add_argument('--sgd', help='Change optimizer to SGD. Default is Adam.', action='store_true')
+
+    #Loss arguments
+    parser.add_argument('--alpha', help='Alpha parameter in focal loss.', type=float, default=0.25)
+    parser.add_argument('--gamma', help='Gamma parameter in focal loss.', type=float, default=2.0)
 
     #NMS arguments
     parser.add_argument('--nms-threshold', help='Threshold for the IoU value to determine when a box should be suppressed.', dest='nms_threshold', type=float, default=0.5)
