@@ -435,6 +435,11 @@ def parse_args(args):
     parser.add_argument('--weighted-average', help='Compute the mAP using the weighted average of precisions among classes.', action='store_true')
     parser.add_argument('--compute-val-loss', help='Compute validation loss during training', dest='compute_val_loss', action='store_true')
 
+    #NMS arguments
+    parser.add_argument('--nms-threshold', help='Threshold for the IoU value to determine when a box should be suppressed.', dest='nms_threshold', type=float, default=0.5)
+    parser.add_argument('--nms-score', help='Threshold used to prefilter the boxes with.', dest='nms_score', type=float, default=0.05)
+    parser.add_argument('--nms-detections', help='Maximum number of detections to keep.', dest='nms_detections', type=int, default=300)
+
     #Evaluation arguments
     parser.add_argument('--iou-threshold', help='The threshold used to consider when a detection is positive or negative.', dest='iou_threshold', type=float, default=0.5)
     parser.add_argument('--score-threshold', help='The score confidence threshold to use for detections.', dest='score_threshold', type=float, default=0.05)
@@ -479,7 +484,13 @@ def main(args=None):
         anchor_params    = None
         if args.config and 'anchor_parameters' in args.config:
             anchor_params = parse_anchor_parameters(args.config)
-        prediction_model = retinanet_bbox(model=model, anchor_params=anchor_params)
+        prediction_model = retinanet_bbox(
+            model = model,
+            nms_threshold = nms_threshold,
+            score_threshold = nms_score,
+            max_detections = nms_detections,
+            anchor_params = anchor_params
+            )
     else:
         weights = args.weights
         # default to imagenet if nothing else is specified
