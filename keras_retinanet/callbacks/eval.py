@@ -104,7 +104,6 @@ class Evaluate(keras.callbacks.Callback):
 
         logs['mAP'] = self.mean_ap
 
-        #added by me (plus line: 161)
         metrics = {'precision_list' : precision, 'recall_list' : recall, 'f1_score' : f1_score, 'true_positives' : true_positives, 'false_positives' : false_positives}
         for name in metrics:
             with open(name + '.txt', 'w') as f:
