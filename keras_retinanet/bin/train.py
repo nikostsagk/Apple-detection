@@ -266,7 +266,7 @@ def create_generators(args, preprocess_image):
             min_scaling=(0.9, 0.9),
             max_scaling=(1.1, 1.1),
             flip_x_chance=0.5,
-            flip_y_chance=0.5,
+            flip_y_chance=0.0,
         )
     else:
         #transform_generator = random_transform_generator(flip_x_chance=0.5) #commented by me
