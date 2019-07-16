@@ -318,7 +318,7 @@ def retinanet_bbox(
         ]
         ```
     """
-
+    print(nms_threshold,score_threshold,max_detections)
     # if no anchor parameters are passed, use default values
     if anchor_params is None:
         anchor_params = AnchorParameters.default
