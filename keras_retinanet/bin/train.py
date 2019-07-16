@@ -82,7 +82,7 @@ def model_with_weights(model, weights, skip_mismatch):
 
 
 def create_models(backbone_retinanet, num_classes, weights, multi_gpu=0,
-                  freeze_backbone=False, lr=1e-5, momentum=0.9, sgd=False, weight_decay=1e-4, alpha=0.25, gamma=2.0, config=None):
+                  freeze_backbone=False, lr=1e-5, momentum=0.9, sgd=False, alpha=0.25, gamma=2.0, config=None):
     """ Creates three models (model, training_model, prediction_model).
 
     Args
@@ -491,9 +491,9 @@ def main(args=None):
             anchor_params = parse_anchor_parameters(args.config)
         prediction_model = retinanet_bbox(
             model = model,
-            nms_threshold = nms_threshold,
-            score_threshold = nms_score,
-            max_detections = nms_detections,
+            nms_threshold = args.nms_threshold,
+            score_threshold = args.nms_score,
+            max_detections = args.nms_detections,
             anchor_params = anchor_params
             )
     else:
