@@ -22,7 +22,6 @@ import sys
 import warnings
 
 import keras
-import keras.regularizers.Regularizer
 import keras.preprocessing.image
 import tensorflow as tf
 
