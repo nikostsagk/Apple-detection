@@ -348,9 +348,9 @@ def retinanet_bbox(
     detections = layers.FilterDetections(
         nms                   = nms,
         class_specific_filter = class_specific_filter,
-        nms_threshold         = 0.5,
-        score_threshold       = 0.05,
-        max_detections        = 300,
+        nms_threshold         = nms_threshold,
+        score_threshold       = score_threshold,
+        max_detections        = max_detections,
         name                  = 'filtered_detections'
     )([boxes, classification] + other)
 
