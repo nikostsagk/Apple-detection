@@ -82,7 +82,7 @@ def model_with_weights(model, weights, skip_mismatch):
 
 
 def create_models(backbone_retinanet, num_classes, weights, multi_gpu=0,
-                  freeze_backbone=False, lr=1e-5, momentum=0.9, sgd=False, alpha=0.25, gamma=2.0, config=None):
+                  freeze_backbone=False, lr=1e-5, momentum=0.9, sgd=False, alpha=0.25, gamma=2.0, nms_threshold=0.5, nms_score=0.05, nms_detections=300, config=None):
     """ Creates three models (model, training_model, prediction_model).
 
     Args
@@ -120,7 +120,13 @@ def create_models(backbone_retinanet, num_classes, weights, multi_gpu=0,
         training_model = model
 
     # make prediction model
-    prediction_model = retinanet_bbox(model=model, anchor_params=anchor_params)
+    prediction_model = retinanet_bbox(
+        model=model,
+        nms_threshold = args.nms_threshold,
+        score_threshold = args.nms_score,
+        max_detections = args.nms_detections,
+        anchor_params=anchor_params
+        )
 
     # create optimizer
     if not sgd:
@@ -489,9 +495,11 @@ def main(args=None):
         anchor_params    = None
         if args.config and 'anchor_parameters' in args.config:
             anchor_params = parse_anchor_parameters(args.config)
-        print(args.nms_threshold, args.nms_score, args.nms_detections)
         prediction_model = retinanet_bbox(
             model = model,
+            nms_threshold = args.nms_threshold,
+            score_threshold = args.nms_score,
+            max_detections = args.nms_detections,
             anchor_params = anchor_params
             )
     else:
@@ -512,6 +520,9 @@ def main(args=None):
             sgd = args.sgd,
             alpha = args.alpha,
             gamma = args.gamma,
+            nms_threshold = args.nms_threshold,
+            nms_score = args.nms_score,
+            nms_detections = args.nms_detections,
             config=args.config
         )
 
