@@ -122,9 +122,9 @@ def create_models(backbone_retinanet, num_classes, weights, multi_gpu=0,
     # make prediction model
     prediction_model = retinanet_bbox(
         model=model,
-        nms_threshold = args.nms_threshold,
-        score_threshold = args.nms_score,
-        max_detections = args.nms_detections,
+        nms_threshold = nms_threshold,
+        score_threshold = nms_score,
+        max_detections = nms_detections,
         anchor_params=anchor_params
         )
 
