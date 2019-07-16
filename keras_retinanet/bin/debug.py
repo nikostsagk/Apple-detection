@@ -203,8 +203,9 @@ def run(generator, args, anchor_params):
                 draw_boxes(image, annotations['bboxes'][max_indices[positive_indices], :], (0, 255, 0))
 	
             # display name on the image	
-            if args.display_name:	
-                draw_caption(image, [0, image.shape[0]], os.path.basename(generator.image_path(i)))
+            if args.display_name:
+                fontScale = image.shape[0] / 800
+                draw_caption(image, [0, image.shape[0]], os.path.basename(generator.image_path(i)), fontScale)
                 
         cv2.imshow('Image', image)
         key = cv2.waitKey()
