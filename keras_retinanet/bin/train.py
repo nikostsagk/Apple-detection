@@ -489,11 +489,9 @@ def main(args=None):
         anchor_params    = None
         if args.config and 'anchor_parameters' in args.config:
             anchor_params = parse_anchor_parameters(args.config)
+        print(args.nms_threshold, args.nms_score, args.nms_detections)
         prediction_model = retinanet_bbox(
             model = model,
-            nms_threshold = args.nms_threshold,
-            score_threshold = args.nms_score,
-            max_detections = args.nms_detections,
             anchor_params = anchor_params
             )
     else:
