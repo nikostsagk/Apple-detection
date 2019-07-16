@@ -109,6 +109,11 @@ def parse_args(args):
     parser.add_argument('--image-max-side',   help='Rescale the image if the largest side is larger than max_side.', type=int, default=1333)
     parser.add_argument('--config',           help='Path to a configuration parameters .ini file (only used with --convert-model).')
 
+    #NMS arguments
+    parser.add_argument('--nms-threshold', help='Threshold for the IoU value to determine when a box should be suppressed.', dest='nms_threshold', type=float, default=0.5)
+    parser.add_argument('--nms-score', help='Threshold used to prefilter the boxes with.', dest='nms_score', type=float, default=0.05)
+    parser.add_argument('--nms-detections', help='Maximum number of detections to keep.', dest='nms_detections', type=int, default=300)
+
     return parser.parse_args(args)
 
 
@@ -148,7 +153,13 @@ def main(args=None):
 
     # optionally convert the model
     if args.convert_model:
-        model = models.convert_model(model, anchor_params=anchor_params)
+        model = models.convert_model(
+            model = model,
+            nms_threshold = args.nms_threshold,
+            score_threshold = args.nms_score,
+            max_detections = args.nms_detections, 
+            anchor_params=anchor_params
+            )
 
     # print model summary
     # print(model.summary())
