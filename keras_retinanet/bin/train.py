@@ -23,6 +23,7 @@ import warnings
 
 import keras
 import keras.preprocessing.image
+from keras.callbacks import LearningRateScheduler
 import tensorflow as tf
 
 # Allow relative imports when being executed as script.
@@ -136,6 +137,18 @@ def create_models(backbone_retinanet, num_classes, weights, multi_gpu=0,
         )
 
     # create optimizer
+    def step_decay(epoch):
+        epochs_drop_1 = 2.0
+        epochs_drop_2 = 7.0
+        epochs_drop_3 = 10.0
+        if epoch < epochs_drop_1:
+            lrate = 1e-1
+        elif epoch <= epochs_drop_2:
+            lrate = 1e-2
+        else:
+            lrate = 1e-3
+        return lrate
+
     if not sgd:
         optimizer=keras.optimizers.adam(lr=lr, clipnorm=1.)
     else:
@@ -202,6 +215,10 @@ def create_callbacks(model, training_model, prediction_model, validation_generat
 
         evaluation = RedirectModel(evaluation, prediction_model)
         callbacks.append(evaluation)
+
+    if args.lr_schedule:
+        lrate = LearningRateScheduler(step_decay, verbose=1)
+        callbacks.append(lrate)
 
     # save the model
     makedirs(args.snapshot_path)
@@ -446,6 +463,7 @@ def parse_args(args):
 
     #Optimizer arguments
     parser.add_argument('--lr', help='Learning rate.', type=float, default=1e-5)
+    parser.add_argument('--lr-schedule', help='Learning rate schedule.', action='store_true')
     parser.add_argument('--momentum', help='Momentum.', type=float, default=0.9)
     parser.add_argument('--sgd', help='Change optimizer to SGD. Default is Adam.', action='store_true')
 
