@@ -216,7 +216,7 @@ def create_callbacks(model, training_model, prediction_model, validation_generat
             else:
                 lrate = 1e-3
             return lrate
-            
+
         lrate = LearningRateScheduler(step_decay, verbose=1)
         callbacks.append(lrate)
 
@@ -274,16 +274,16 @@ def create_generators(args, preprocess_image):
     # create random transform generator for augmenting training data
     if args.random_transform:
         transform_generator = random_transform_generator(
-            min_rotation=-0.1,
-            max_rotation=0.1,
+            min_rotation=0.0, # disable rotation
+            max_rotation=0.0,
             min_translation=(-0.1, -0.1),
             max_translation=(0.1, 0.1),
-            min_shear=-0.1,
-            max_shear=0.1,
+            min_shear=0.0, #disable shear
+            max_shear=0.0,
             min_scaling=(0.9, 0.9),
             max_scaling=(1.1, 1.1),
             flip_x_chance=0.5,
-            flip_y_chance=0.0,
+            flip_y_chance=0.0, #disable y flip
         )
     else:
         #transform_generator = random_transform_generator(flip_x_chance=0.5) #commented by me
