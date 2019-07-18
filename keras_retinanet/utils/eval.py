@@ -98,9 +98,8 @@ def _get_detections(generator, model, score_threshold=0.05, max_detections=100, 
         A list of lists containing the detections for each image in the generator.
     """
     all_detections = [[None for i in range(generator.num_classes()) if generator.has_label(i)] for j in range(generator.size())]
-    u=0
+
     for i in range(generator.size()):
-    #for i in range(1):
         raw_image    = generator.load_image(i)
         image        = generator.preprocess_image(raw_image.copy())
         image, scale = generator.resize_image(image)
@@ -120,8 +119,6 @@ def _get_detections(generator, model, score_threshold=0.05, max_detections=100, 
 
         # select those scores
         scores = scores[0][indices]
-        u += scores.shape[0]
-        print(u)
 
         # find the order with which to sort the scores
         scores_sort = np.argsort(-scores)[:max_detections]
@@ -134,7 +131,7 @@ def _get_detections(generator, model, score_threshold=0.05, max_detections=100, 
 
         if save_path is not None:
             draw_annotations(raw_image, generator.load_annotations(i), label_to_name=generator.label_to_name)
-            draw_detections(raw_image, image_boxes, image_scores, image_labels, label_to_name=generator.label_to_name)
+            draw_detections(raw_image, image_boxes, image_scores, image_labels, label_to_name=generator.label_to_name, score_threshold=score_threshold)
 
             cv2.imwrite(os.path.join(save_path, '{}.png'.format(i)), raw_image)
 
