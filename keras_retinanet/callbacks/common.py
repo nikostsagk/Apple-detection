@@ -8,9 +8,9 @@ def default_lr_scheduler(
 
     def default_lr_scheduler_(epoch, lr):
 
-        if (epoch >= steps[0]) and (epoch < steps[1]):
+        if (epoch > steps[0]) and (epoch <= steps[1]):
             lr = base_lr / 10.0
-        elif epoch >= steps[1]:
+        elif epoch > steps[1]:
             lr = base_lr / 100.0
 
         print('Learning rate: ', lr)
