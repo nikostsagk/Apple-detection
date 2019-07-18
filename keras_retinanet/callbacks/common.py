@@ -15,7 +15,8 @@ def default_lr_scheduler(
             lr = base_lr / 10.0
         elif epoch >= steps[1]:
             lr = base_lr / 100.0
-        print(lr)
+            
+        print('Learning rate: ', lr)
         return lr
 
     return default_lr_scheduler_
@@ -36,7 +37,7 @@ class LearningRateScheduler(keras.callbacks.Callback):
         self.epoch = 0
         self.verbose   = verbose
 
-    def on_epoch_begin(self, epoch, logs=None):
+    def on_epoch_end(self, epoch, logs=None):
         self.epoch += 1
 
         if not hasattr(self.model.optimizer, 'lr'):
