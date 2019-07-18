@@ -73,8 +73,7 @@ class Evaluate(keras.callbacks.Callback):
         total_instances = []
         precisions = []
         for label, (average_precision, num_annotations ) in average_precisions.items():
-            if self.verbose == 1:
-                pass # commented because they are printed in the end
+            if self.verbose == 2:
                 print('{:.0f} instances of class'.format(num_annotations),
                       self.generator.label_to_name(label), 'with average precision: {:.4f}'.format(average_precision))
             total_instances.append(num_annotations)
@@ -83,8 +82,7 @@ class Evaluate(keras.callbacks.Callback):
         # compute per class average f1
         f1_scores = []
         for label, (average_f1_score, num_annotations) in average_f1_scores.items():
-            if self.verbose == 1:
-                pass # commented because they are printed in the end
+            if self.verbose == 2:
                 print('{:.0f} instances of class'.format(num_annotations),
                       self.generator.label_to_name(label), 'with average F1-score: {:.4f} \n'.format(average_f1_score))
             f1_scores.append(average_f1_score)
