@@ -205,15 +205,6 @@ def create_callbacks(model, training_model, prediction_model, validation_generat
         evaluation = RedirectModel(evaluation, prediction_model)
         callbacks.append(evaluation)
 
-    if args.lr_schedule:
-        lrate = LearningRateScheduler(default_lr_scheduler(
-            base_lr=args.lr,
-            steps=np.array([args.steps*6,args.steps*10])),
-            verbose=1
-            )
-
-        callbacks.append(lrate)
-
     # save the model
     makedirs(args.snapshot_path)
     if args.snapshots:
@@ -246,6 +237,13 @@ def create_callbacks(model, training_model, prediction_model, validation_generat
         cooldown   = 0,
         min_lr     = 0
     ))
+
+    if args.lr_schedule:
+    lrate = LearningRateScheduler(default_lr_scheduler(
+        base_lr=args.lr,
+        steps=np.array([args.steps*6,args.steps*10]), verbose=1)
+    )
+    callbacks.append(lrate)
 
     return callbacks
 
