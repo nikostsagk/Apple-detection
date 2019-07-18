@@ -120,7 +120,7 @@ def _get_detections(generator, model, score_threshold=0.05, max_detections=100, 
 
         # select those scores
         scores = scores[0][indices]
-        u += score.shape[0]
+        u += scores.shape[0]
         print(u)
 
         # find the order with which to sort the scores
