@@ -80,7 +80,7 @@ def draw_detections(image, boxes, scores, labels, color=None, label_to_name=None
         # draw labels
         caption = (label_to_name(labels[i]) if label_to_name else labels[i]) + ': {0:.2f}'.format(scores[i])
         fontScale = 0.7 * image.shape[0] / 800
-        draw_caption(image, boxes[i, :], caption)
+        draw_caption(image, boxes[i, :], caption, fontScale)
 
 
 def draw_annotations(image, annotations, color=(0, 255, 0), label_to_name=None):
