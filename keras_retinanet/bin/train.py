@@ -23,8 +23,8 @@ import warnings
 
 import keras
 import keras.preprocessing.image
-from keras.callbacks import LearningRateScheduler
 import tensorflow as tf
+import numpy as np
 
 # Allow relative imports when being executed as script.
 if __name__ == "__main__" and __package__ is None:
@@ -38,6 +38,7 @@ from .. import losses
 from .. import models
 from ..callbacks import RedirectModel
 from ..callbacks.eval import Evaluate
+from ..callbacks.common import LearningRateScheduler, default_lr_scheduler
 from ..models.retinanet import retinanet_bbox
 from ..preprocessing.csv_generator import CSVGenerator
 from ..preprocessing.kitti import KittiGenerator
@@ -205,19 +206,12 @@ def create_callbacks(model, training_model, prediction_model, validation_generat
         callbacks.append(evaluation)
 
     if args.lr_schedule:
-        def step_decay(epoch):
-            epochs_drop_1 = 2.0
-            epochs_drop_2 = 7.0
-            epochs_drop_3 = 10.0
-            if epoch < epochs_drop_1:
-                lrate = 1e-1
-            elif epoch <= epochs_drop_2:
-                lrate = 1e-2
-            else:
-                lrate = 1e-3
-            return lrate
+        lrate = LearningRateScheduler(step_decay(
+            base_lr=args.lr,
+            steps=np.array([args.steps*6,args.steps*10])),
+            verbose=1
+            )
 
-        lrate = LearningRateScheduler(step_decay, verbose=1)
         callbacks.append(lrate)
 
     # save the model

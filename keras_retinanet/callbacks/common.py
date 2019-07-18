@@ -1,5 +1,57 @@
 import keras.callbacks
+import numpy as np
 
+def default_lr_scheduler(
+    base_lr = 0.01,
+    steps = np.array([60000, 100000])
+    ):
+
+    def default_lr_scheduler_(iteration, lr):
+        # stay on last lr
+        if iteration >= steps[-1]:
+            iteration = steps[-1] - 1
+
+        if (iteration >= steps[0]) and (iteration < steps[1]):
+            lr = base_lr / 10.0
+        elif iteration >= steps[1]:
+            lr = base_lr / 100.0
+        return lr
+
+    return default_lr_scheduler_
+
+
+class LearningRateScheduler(keras.callbacks.Callback):
+    """Learning rate scheduler (mostly copied from keras.callbacks.LearningRateScheduler).
+    # Arguments
+        schedule: a function that takes an iteration as input
+            (integer, indexed from 0) and current learning rate
+            and returns a new learning rate as output (float).
+        verbose: int. 0: quiet, 1: update messages.
+    """
+
+    def __init__(self, schedule, base_lr=0.01, verbose=0):
+        super(LearningRateScheduler, self).__init__()
+        self.schedule  = schedule
+        self.iteration = 0
+        self.verbose   = verbose
+
+    def on_batch_begin(self, batch, logs=None):
+        self.iteration += 1
+
+        if not hasattr(self.model.optimizer, 'lr'):
+            raise ValueError('Optimizer must have a "lr" attribute.')
+
+        lr = float(keras.backend.get_value(self.model.optimizer.lr))
+        lr = self.schedule(self.iteration, lr=lr)
+
+        if not isinstance(lr, (float, np.float32, np.float64)):
+            raise ValueError('The output of the "schedule" function should be float (got {}).'.format(lr))
+
+        keras.backend.set_value(self.model.optimizer.lr, lr)
+
+        if self.verbose > 0:
+            print()
+            print('\nIteration {:05d}: LearningRateScheduler reducing learning rate to {}.'.format(self.iteration, lr))
 
 class RedirectModel(keras.callbacks.Callback):
     """Callback which wraps another callback, but executed on a different model.
