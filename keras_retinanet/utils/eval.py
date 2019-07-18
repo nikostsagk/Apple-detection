@@ -21,7 +21,7 @@ import keras
 import numpy as np
 import os
 import time
-
+import matplotlib.pyplot as plt
 import cv2
 import progressbar
 assert(callable(progressbar.progressbar)), "Using wrong progressbar module, install 'progressbar2' instead."
@@ -98,8 +98,9 @@ def _get_detections(generator, model, score_threshold=0.05, max_detections=100, 
         A list of lists containing the detections for each image in the generator.
     """
     all_detections = [[None for i in range(generator.num_classes()) if generator.has_label(i)] for j in range(generator.size())]
-
+    u=0
     for i in range(generator.size()):
+    #for i in range(1):
         raw_image    = generator.load_image(i)
         image        = generator.preprocess_image(raw_image.copy())
         image, scale = generator.resize_image(image)
@@ -119,6 +120,8 @@ def _get_detections(generator, model, score_threshold=0.05, max_detections=100, 
 
         # select those scores
         scores = scores[0][indices]
+        u += score.shape[0]
+        print(u)
 
         # find the order with which to sort the scores
         scores_sort = np.argsort(-scores)[:max_detections]
