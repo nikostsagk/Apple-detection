@@ -3,7 +3,7 @@ import numpy as np
 
 def default_lr_scheduler(
     base_lr = 0.01,
-    steps = np.array([6, 1])
+    steps = np.array([6, 10])
     ):
 
     def default_lr_scheduler_(epoch, lr):
