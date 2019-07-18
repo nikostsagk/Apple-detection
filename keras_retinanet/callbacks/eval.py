@@ -68,6 +68,13 @@ class Evaluate(keras.callbacks.Callback):
             max_detections=self.max_detections,
             save_path=self.save_path
         )
+        print(average_precisions)
+        print(average_f1_scores)
+        print(true_positives)
+        print(false_positives)
+        print(precision)
+        print(recall)
+        print(f1_score)
 
         # compute per class average precision
         total_instances = []
