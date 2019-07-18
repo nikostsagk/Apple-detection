@@ -182,16 +182,16 @@ def main(args=None):
         total_instances = []
         precisions = []
         for label, (average_precision, num_annotations) in average_precisions.items():
-            print('{:.0f} instances of class'.format(num_annotations),
-                  generator.label_to_name(label), 'with average precision: {:.4f}'.format(average_precision))
+            #print('{:.0f} instances of class'.format(num_annotations),
+            #      generator.label_to_name(label), 'with average precision: {:.4f}'.format(average_precision))
             total_instances.append(num_annotations)
             precisions.append(average_precision)
 
         # compute per class average f1
         f1_scores = []
         for label, (average_f1_score, num_annotations) in average_f1_scores.items():
-            print('{:.0f} instances of class'.format(num_annotations),
-                    generator.label_to_name(label), 'with average F1-score: {:.4f} \n'.format(average_f1_score))
+            #print('{:.0f} instances of class'.format(num_annotations),
+            #        generator.label_to_name(label), 'with average F1-score: {:.4f} \n'.format(average_f1_score))
             f1_scores.append(average_f1_score)
 
         if sum(total_instances) == 0:
@@ -204,9 +204,15 @@ def main(args=None):
         mean_ap = sum(precisions) / sum(x > 0 for x in total_instances)
         mean_f1 = sum(f1_scores) / sum(x > 0 for x in total_instances)
 
-        for label, k  in enumerate(true_positives):
-            print('Class {}: Instances: {} | Predictions: {} | False positives: {} | True positives: {}'.format(generator.label_to_name(label), total_instances[k], len(true_positives[label]), int(false_positives[label][-1]), int(true_positives[label][-1])))
-            print('Recall: ', recall[-1], 'Precision: ', precision[-1], 'F1-score: ', f1_score[-1])
+        for label in range(generator.num_classes()):
+            class_label = generator.label_to_name(label)
+            instances = int(total_instances[label])
+            predictions = len(true_positives[label])
+            false_positives = int(false_positives[label][-1]) if len(false_positives[label]) > 0 else 0
+            true_positives = int(true_positives[label][-1]) if len(true_positives[label]) > 0 else 0
+
+            print('Class {}: Instances: {} | Predictions: {} | False positives: {} | True positives: {}'.format(
+                    class_label, instances, predictions, false_positives, true_positives))
             print('mAP: {:.4f}'.format(mean_ap), 'mF1-score: {:.4f}'.format(mean_f1))
 
 
