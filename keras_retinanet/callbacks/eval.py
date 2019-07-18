@@ -118,8 +118,8 @@ class Evaluate(keras.callbacks.Callback):
                     f.write("%s\n" % item)
 
         if self.verbose == 1:
-            for label, k  in enumerate(true_positives):
-                print('Class {}: Instances: {} | Predictions: {} | False positives: {} | True positives: {}'.format(self.generator.label_to_name(label), total_instances[k], len(true_positives[label]), int(false_positives[label][-1]), int(true_positives[label][-1])))
-            print('Recall: ', recall[-1], 'Precision: ', precision[-1], 'F1-score: ', f1_score[-1])
+            for label in range(generator.num_classes()):
+                print('Class {}: Instances: {} | Predictions: {} | False positives: {} | True positives: {}'.format(
+                    self.generator.label_to_name(label), int(total_instances[label]), len(true_positives[label]), int(false_positives[label][-1]), int(true_positives[label][-1])))
             print('mAP: {:.4f}'.format(self.mean_ap), 'mF1-score: {:.4f}'.format(self.mean_f1))
 
