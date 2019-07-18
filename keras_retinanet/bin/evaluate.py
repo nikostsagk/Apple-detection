@@ -198,8 +198,8 @@ def main(args=None):
             print('No test instances found.')
             return
 
-        print('mAP using the weighted average of precisions among classes: {:.4f}'.format(sum([a * b for a, b in zip(total_instances, precisions)]) / sum(total_instances)))
-        print('mAP: {:.4f}'.format(sum(precisions) / sum(x > 0 for x in total_instances)))
+        #print('mAP using the weighted average of precisions among classes: {:.4f}'.format(sum([a * b for a, b in zip(total_instances, precisions)]) / sum(total_instances)))
+        #print('mAP: {:.4f}'.format(sum(precisions) / sum(x > 0 for x in total_instances)))
 
         mean_ap = sum(precisions) / sum(x > 0 for x in total_instances)
         mean_f1 = sum(f1_scores) / sum(x > 0 for x in total_instances)
@@ -211,7 +211,7 @@ def main(args=None):
             false_positives = int(false_positives[label][-1]) if len(false_positives[label]) > 0 else 0
             true_positives = int(true_positives[label][-1]) if len(true_positives[label]) > 0 else 0
 
-            print('Class {}: Instances: {} | Predictions: {} | False positives: {} | True positives: {}'.format(
+            print('\n Class {}: Instances: {} | Predictions: {} | False positives: {} | True positives: {}'.format(
                     class_label, instances, predictions, false_positives, true_positives))
             print('mAP: {:.4f}'.format(mean_ap), 'mF1-score: {:.4f}'.format(mean_f1))
 
