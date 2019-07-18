@@ -242,7 +242,7 @@ def create_callbacks(model, training_model, prediction_model, validation_generat
         lrate = LearningRateScheduler(default_lr_scheduler(
             base_lr=args.lr,
             ),
-            verbose=1
+            verbose=0
         )
         callbacks.append(lrate)
 
