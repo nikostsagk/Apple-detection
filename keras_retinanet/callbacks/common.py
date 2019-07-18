@@ -3,7 +3,7 @@ import numpy as np
 
 def default_lr_scheduler(
     base_lr = 0.01,
-    steps = np.array([60000, 100000])
+    steps = np.array([6, 1])
     ):
 
     def default_lr_scheduler_(iteration, lr):
@@ -15,6 +15,7 @@ def default_lr_scheduler(
             lr = base_lr / 10.0
         elif iteration >= steps[1]:
             lr = base_lr / 100.0
+        print(lr)
         return lr
 
     return default_lr_scheduler_
