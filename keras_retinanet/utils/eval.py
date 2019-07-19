@@ -98,6 +98,7 @@ def _get_detections(generator, model, score_threshold=0.05, max_detections=100, 
         A list of lists containing the detections for each image in the generator.
     """
     all_detections = [[None for i in range(generator.num_classes()) if generator.has_label(i)] for j in range(generator.size())]
+    processed_time = np.zeros(generator.size())
 
     for i in range(generator.size()):
         raw_image    = generator.load_image(i)
@@ -110,7 +111,8 @@ def _get_detections(generator, model, score_threshold=0.05, max_detections=100, 
         # run network
         start = time.time()
         boxes, scores, labels = model.predict_on_batch(np.expand_dims(image, axis=0))[:3]
-        print('Processing time {}/{}:'.format(i+1,generator.size()), time.time() - start)
+        processed_time[i] = time.time() - start
+
         # correct boxes for image scale
         boxes /= scale
 
@@ -141,6 +143,8 @@ def _get_detections(generator, model, score_threshold=0.05, max_detections=100, 
                 continue
 
             all_detections[i][label] = image_detections[image_detections[:, -1] == label, :-1]
+
+    print('Mean elapsed time for {} images:'.format(generator.size(), processed_time.mean())
 
     return all_detections
 
