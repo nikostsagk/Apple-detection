@@ -103,6 +103,7 @@ class Evaluate(keras.callbacks.Callback):
             self.tensorboard.writer.add_summary(summary, epoch)
 
         logs['mAP'] = self.mean_ap
+        logs['F1-score'] = self.mean_f1
 
         metrics = {'precision_list' : precision, 'recall_list' : recall, 'f1_score' : f1_score, 'true_positives' : true_positives, 'false_positives' : false_positives}
         for name in metrics:
