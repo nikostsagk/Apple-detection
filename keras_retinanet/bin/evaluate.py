@@ -213,7 +213,7 @@ def main(args=None):
 
             print('\n Class {}: Instances: {} | Predictions: {} | False positives: {} | True positives: {}'.format(
                     class_label, instances, predictions, false_positives, true_positives))
-            print('Precision: {} | Recall: {} | F1-score: {}'.format(precision, recall, f1_score))
+            print('Precision: {} | Recall: {} | F1-score: {}'.format(precision.mean(), recall.mean(), f1_score.mean()))
             print('mAP: {:.4f}'.format(mean_ap), 'mF1-score: {:.4f}'.format(mean_f1))
 
 
