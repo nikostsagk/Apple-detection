@@ -21,7 +21,6 @@ import keras
 import numpy as np
 import os
 import time
-import matplotlib.pyplot as plt
 import cv2
 import progressbar
 assert(callable(progressbar.progressbar)), "Using wrong progressbar module, install 'progressbar2' instead."
