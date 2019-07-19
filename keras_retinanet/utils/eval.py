@@ -143,7 +143,7 @@ def _get_detections(generator, model, score_threshold=0.05, max_detections=100, 
 
             all_detections[i][label] = image_detections[image_detections[:, -1] == label, :-1]
 
-    print('Mean elapsed time for {} images:'.format(generator.size(), processed_time.mean()))
+    print('\nMean elapsed time for {} images: {}'.format(generator.size(), processed_time[1:].mean()))
 
     return all_detections
 
@@ -276,4 +276,4 @@ def evaluate(
         average_f1_score = _compute_af1(recall, f1_score)
         average_f1_scores[label] = average_f1_score, num_annotations
 
-    return average_precisions, average_f1_scores, true_positives, false_positives, precision, recall, f1_score
+    return average_precisions, average_f1_scores, true_positives, false_positives

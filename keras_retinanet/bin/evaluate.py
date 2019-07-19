@@ -169,7 +169,7 @@ def main(args=None):
         from ..utils.coco_eval import evaluate_coco
         evaluate_coco(generator, model, args.score_threshold)
     else:
-        average_precisions, average_f1_scores, true_positives, false_positives, precision, recall, f1_score = evaluate(
+        average_precisions, average_f1_scores, true_positives, false_positives = evaluate(
             generator,
             model,
             iou_threshold=args.iou_threshold,
@@ -211,9 +211,8 @@ def main(args=None):
             false_positives = int(false_positives[label][-1]) if len(false_positives[label]) > 0 else 0
             true_positives = int(true_positives[label][-1]) if len(true_positives[label]) > 0 else 0
 
-            print('\n Class {}: Instances: {} | Predictions: {} | False positives: {} | True positives: {}'.format(
+            print('\nClass {}: Instances: {} | Predictions: {} | False positives: {} | True positives: {}'.format(
                     class_label, instances, predictions, false_positives, true_positives))
-            print('Precision: {} | Recall: {} | F1-score: {}'.format(precision.mean(), recall.mean(), f1_score.mean()))
             print('mAP: {:.4f}'.format(mean_ap), 'mF1-score: {:.4f}'.format(mean_f1))
 
 

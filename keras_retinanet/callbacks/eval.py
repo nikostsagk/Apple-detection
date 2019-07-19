@@ -60,7 +60,7 @@ class Evaluate(keras.callbacks.Callback):
         logs = logs or {}
 
         # run evaluation
-        average_precisions, average_f1_scores, true_positives, false_positives, precision, recall, f1_score = evaluate(
+        average_precisions, average_f1_scores, true_positives, false_positives = evaluate(
             self.generator,
             self.model,
             iou_threshold=self.iou_threshold,
@@ -105,12 +105,6 @@ class Evaluate(keras.callbacks.Callback):
         logs['mAP'] = self.mean_ap
         logs['F1-score'] = self.mean_f1
 
-        metrics = {'precision_list' : precision, 'recall_list' : recall, 'f1_score' : f1_score, 'true_positives' : true_positives, 'false_positives' : false_positives}
-        for name in metrics:
-            with open(name + '.txt', 'w') as f:
-                for item in metrics[name]:
-                    f.write("%s\n" % item)
-
         if self.verbose == 1:
             for label in range(self.generator.num_classes()):
                 class_label = self.generator.label_to_name(label)
@@ -119,7 +113,10 @@ class Evaluate(keras.callbacks.Callback):
                 false_positives = int(false_positives[label][-1]) if len(false_positives[label]) > 0 else 0
                 true_positives = int(true_positives[label][-1]) if len(true_positives[label]) > 0 else 0
 
-                print('Class {}: Instances: {} | Predictions: {} | False positives: {} | True positives: {}'.format(
+                logs['True positives'] = true_positives
+                logs['False positives'] = false_positives
+
+                print('\nClass {}: Instances: {} | Predictions: {} | False positives: {} | True positives: {}'.format(
                     class_label, instances, predictions, false_positives, true_positives))
             print('mAP: {:.4f}'.format(self.mean_ap), 'mF1-score: {:.4f}'.format(self.mean_f1))
 
