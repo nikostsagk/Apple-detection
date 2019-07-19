@@ -90,7 +90,8 @@ def random_rotation(min, max, prng=DEFAULT_PRNG):
     Returns
         a homogeneous 3 by 3 rotation matrix
     """
-    return rotation(prng.uniform(min, max))
+    # I changed way angle is picked.
+    return rotation(prng.choice([min, max]))
 
 
 def translation(translation):
@@ -240,10 +241,10 @@ def random_transform(
         flip_y_chance:   The chance (0 to 1) that a transform will contain a flip along Y direction.
         prng:            The pseudo-random number generator to use.
     """
+    #I removed random_shear(min_shear, max_shear, prng).
     return np.linalg.multi_dot([
         random_rotation(min_rotation, max_rotation, prng),
         random_translation(min_translation, max_translation, prng),
-        random_shear(min_shear, max_shear, prng),
         random_scaling(min_scaling, max_scaling, prng),
         random_flip(flip_x_chance, flip_y_chance, prng)
     ])
