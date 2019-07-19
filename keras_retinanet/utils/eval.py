@@ -144,7 +144,7 @@ def _get_detections(generator, model, score_threshold=0.05, max_detections=100, 
 
             all_detections[i][label] = image_detections[image_detections[:, -1] == label, :-1]
 
-    print('Mean elapsed time for {} images:'.format(generator.size(), processed_time.mean())
+    print('Mean elapsed time for {} images:'.format(generator.size(), processed_time.mean()))
 
     return all_detections
 
