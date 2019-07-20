@@ -55,9 +55,9 @@ def preprocess_image(x, mode='caffe'):
     x = x.astype(np.float32)
 
     #Before preprocessing remove mean from dataset
-    x[..., 0] -= 135.1935
-    x[..., 1] -= 121.3656
-    x[..., 2] -= 104.9435
+    #x[..., 0] -= 135.1935
+    #x[..., 1] -= 121.3656
+    #x[..., 2] -= 104.9435
 
     if mode == 'tf':
         x /= 127.5
