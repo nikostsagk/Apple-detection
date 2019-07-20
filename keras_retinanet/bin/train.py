@@ -84,7 +84,9 @@ def model_with_weights(model, weights, skip_mismatch):
 
 
 def create_models(backbone_retinanet, num_classes, weights, multi_gpu=0,
-                  freeze_backbone=False, lr=1e-5, momentum=0.9, sgd=False, alpha=0.25, gamma=2.0, nms_threshold=0.5, nms_score=0.05, nms_detections=300, config=None):
+                  freeze_backbone=False, lr=1e-5, momentum=0.9, sgd=False, 
+                  alpha=0.25, gamma=2.0, nms_threshold=0.5, nms_score=0.05, 
+                  nms_detections=300, config=None):
     """ Creates three models (model, training_model, prediction_model).
 
     Args
@@ -118,14 +120,14 @@ def create_models(backbone_retinanet, num_classes, weights, multi_gpu=0,
             model = model_with_weights(backbone_retinanet(num_classes, num_anchors=num_anchors, modifier=modifier), weights=weights, skip_mismatch=True)
 
         # Add weight decay (L2 regularization)
-        for layer in model.layers:
-            layers.kernel_regularizer = keras.regularizers.l2(1e-4)
+        for layer in model.layers[:19]:
+            layer.kernel_regularizer = keras.regularization.l2(1e-4)
         training_model = multi_gpu_model(model, gpus=multi_gpu)
     else:
         model          = model_with_weights(backbone_retinanet(num_classes, num_anchors=num_anchors, modifier=modifier), weights=weights, skip_mismatch=True)
         # Add weight decay (L2 regularization)
-        for layer in model.layers:
-            layers.kernel_regularizer = keras.regularizers.l2(1e-4)
+        for layer in model.layers[:19]:
+            layer.kernel_regularizer = keras.regularization.l2(1e-4)
         training_model = model
 
     # make prediction model
@@ -457,6 +459,7 @@ def parse_args(args):
     parser.add_argument('--lr-schedule', help='Learning rate schedule.', action='store_true')
     parser.add_argument('--momentum', help='Momentum.', type=float, default=0.9)
     parser.add_argument('--sgd', help='Change optimizer to SGD. Default is Adam.', action='store_true')
+    parser.add_argument('--regularization', help='Add regularization to layers (nothing if layers are fozen).', action='store_true')
 
     #Loss arguments
     parser.add_argument('--alpha', help='Alpha parameter in focal loss.', type=float, default=0.25)
@@ -486,7 +489,7 @@ def main(args=None):
     args = parse_args(args)
 
     # create object that stores backbone information
-    backbone = models.backbone(args.backbone)
+    backbone = models.backbone(args.backbone, args.regularization)
 
     # make sure keras is the minimum required version
     check_keras_version()
