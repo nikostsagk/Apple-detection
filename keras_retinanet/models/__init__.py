@@ -46,7 +46,7 @@ class Backbone(object):
         raise NotImplementedError('preprocess_image method not implemented.')
 
 
-def backbone(backbone_name, *args):
+def backbone(backbone_name):
     """ Returns a backbone object for the given backbone.
     """
     if 'resnet' in backbone_name:
@@ -60,7 +60,7 @@ def backbone(backbone_name, *args):
     else:
         raise NotImplementedError('Backbone class for  \'{}\' not implemented.'.format(backbone))
 
-    return b(backbone_name, *args)
+    return b(backbone_name)
 
 
 def load_model(filepath, backbone_name='resnet50'):

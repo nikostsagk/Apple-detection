@@ -86,7 +86,7 @@ def model_with_weights(model, weights, skip_mismatch):
 def create_models(backbone_retinanet, num_classes, weights, multi_gpu=0,
                   freeze_backbone=False, lr=1e-5, momentum=0.9, sgd=False, 
                   alpha=0.25, gamma=2.0, nms_threshold=0.5, nms_score=0.05, 
-                  nms_detections=300, config=None):
+                  nms_detections=300, config=None, regularization=None):
     """ Creates three models (model, training_model, prediction_model).
 
     Args
@@ -119,15 +119,15 @@ def create_models(backbone_retinanet, num_classes, weights, multi_gpu=0,
         with tf.device('/cpu:0'):
             model = model_with_weights(backbone_retinanet(num_classes, num_anchors=num_anchors, modifier=modifier), weights=weights, skip_mismatch=True)
 
-        # Add weight decay (L2 regularization)
-        for layer in model.layers[:19]:
-            layer.kernel_regularizer = keras.regularization.l2(1e-4)
         training_model = multi_gpu_model(model, gpus=multi_gpu)
     else:
         model          = model_with_weights(backbone_retinanet(num_classes, num_anchors=num_anchors, modifier=modifier), weights=weights, skip_mismatch=True)
+        
         # Add weight decay (L2 regularization)
-        for layer in model.layers[:19]:
-            layer.kernel_regularizer = keras.regularization.l2(1e-4)
+        if regularization:
+            for layer in model.layers[:19]:
+                layer.kernel_regularizer = keras.regularization.l2(1e-4)
+
         training_model = model
 
     # make prediction model
@@ -489,7 +489,7 @@ def main(args=None):
     args = parse_args(args)
 
     # create object that stores backbone information
-    backbone = models.backbone(args.backbone, args.regularization)
+    backbone = models.backbone(args.backbone)
 
     # make sure keras is the minimum required version
     check_keras_version()
@@ -542,7 +542,8 @@ def main(args=None):
             nms_threshold = args.nms_threshold,
             nms_score = args.nms_score,
             nms_detections = args.nms_detections,
-            config=args.config
+            config=args.config,
+            regularization=args.regularization
         )
 
     # print model summary

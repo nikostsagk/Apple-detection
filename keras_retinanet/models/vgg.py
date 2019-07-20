@@ -92,10 +92,6 @@ def vgg_retinanet(num_classes, backbone='vgg16', inputs=None, modifier=None, **k
 
     if modifier:
         vgg = modifier(vgg)
-    if not modifier and args.regularization:
-        for layer in model.layers:
-            layer.kernel_regularizer = keras.regularization.l2(1e-4)
-    print(model.get_config())
 
     # create the full model
     layer_names = ["block3_pool", "block4_pool", "block5_pool"]
