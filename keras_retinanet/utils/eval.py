@@ -278,6 +278,7 @@ def evaluate(
         average_f1_scores[label] = average_f1_score, num_annotations
 
         # store pr_curves
+        pr_curves[label] = {}
         pr_curves[label]['precision'] = precision
         pr_curves[label]['recall'] = recall
         pr_curves[label]['f1_score'] = f1_score
