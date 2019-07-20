@@ -17,7 +17,7 @@ limitations under the License.
 import numpy as np
 import random
 import warnings
-
+import cv2
 import keras
 
 from ..utils.anchors import (
@@ -190,6 +190,12 @@ class Generator(keras.utils.Sequence):
             # apply transformation to image
             image = apply_transform(transform, image, self.transform_parameters)
 
+            # apply blurring with blurring_chance
+            blurring_chance = 0.25 
+            if np.random.uniform(0, 1) < blurring_chance:
+                kernel = np.ones((3,3),np.float32)/9
+                image = cv2.filter2D(image,-1,kernel)
+                
             # Transform the bounding boxes in the annotations.
             annotations['bboxes'] = annotations['bboxes'].copy()
             for index in range(annotations['bboxes'].shape[0]):
