@@ -47,12 +47,10 @@ def create_generator(args):
     """
     # create random transform generator for augmenting training data
     transform_generator = random_transform_generator(
-        min_rotation=-0.1,
-        max_rotation=0.1,
+        min_rotation=0,  #Rotation is gonna be either 0
+        max_rotation=90, #or 90 degrees.
         min_translation=(-0.1, -0.1),
         max_translation=(0.1, 0.1),
-        min_shear=-0.1,
-        max_shear=0.1,
         min_scaling=(0.9, 0.9),
         max_scaling=(1.1, 1.1),
         flip_x_chance=0.5,
