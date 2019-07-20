@@ -60,7 +60,7 @@ class Evaluate(keras.callbacks.Callback):
         logs = logs or {}
 
         # run evaluation
-        average_precisions, average_f1_scores, true_positives, false_positives, pr_curves = evaluate(
+        average_precisions, average_f1_scores, true_positives, false_positives, _ = evaluate(
             self.generator,
             self.model,
             iou_threshold=self.iou_threshold,
