@@ -108,6 +108,7 @@ def parse_args(args):
     parser.add_argument('--image-min-side',   help='Rescale the image so the smallest side is min_side.', type=int, default=800)
     parser.add_argument('--image-max-side',   help='Rescale the image if the largest side is larger than max_side.', type=int, default=1333)
     parser.add_argument('--config',           help='Path to a configuration parameters .ini file (only used with --convert-model).')
+    parser.add_argument('--logs',             help='Path to save statistics like the PR curves.', action='store_true')
 
     #NMS arguments
     parser.add_argument('--nms-threshold', help='Threshold for the IoU value to determine when a box should be suppressed.', dest='nms_threshold', type=float, default=0.5)
@@ -169,7 +170,7 @@ def main(args=None):
         from ..utils.coco_eval import evaluate_coco
         evaluate_coco(generator, model, args.score_threshold)
     else:
-        average_precisions, average_f1_scores, true_positives, false_positives = evaluate(
+        average_precisions, average_f1_scores, true_positives, false_positives, pr_curves = evaluate(
             generator,
             model,
             iou_threshold=args.iou_threshold,
@@ -215,6 +216,9 @@ def main(args=None):
                     class_label, instances, predictions, false_positives, true_positives))
             print('mAP: {:.4f}'.format(mean_ap), 'mF1-score: {:.4f}'.format(mean_f1))
 
-
+        # save stats
+        if args.logs:
+            np.save(args.logs, pr_curves)
+            
 if __name__ == '__main__':
     main()

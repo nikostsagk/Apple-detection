@@ -200,6 +200,7 @@ def evaluate(
     all_annotations    = _get_annotations(generator)
     average_precisions = {}
     average_f1_scores = {}
+    pr_curves = {}
 
     # all_detections = pickle.load(open('all_detections.pkl', 'rb'))
     # all_annotations = pickle.load(open('all_annotations.pkl', 'rb'))
@@ -276,4 +277,9 @@ def evaluate(
         average_f1_score = _compute_af1(recall, f1_score)
         average_f1_scores[label] = average_f1_score, num_annotations
 
-    return average_precisions, average_f1_scores, true_positives, false_positives
+        # store pr_curves
+        pr_curves[label]['precision'] = precision
+        pr_curves[label]['recall'] = recall
+        pr_curves[label]['f1_score'] = f1_score
+
+    return average_precisions, average_f1_scores, true_positives, false_positives, pr_curves
