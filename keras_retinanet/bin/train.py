@@ -126,7 +126,7 @@ def create_models(backbone_retinanet, num_classes, weights, multi_gpu=0,
         # Add weight decay (L2 regularization)
         if regularization:
             for layer in model.layers[:19]:
-                layer.kernel_regularizer = keras.regularization.l2(1e-4)
+                layer.kernel_regularizer = keras.regularizers.l2(1e-4)
 
         training_model = model
 
