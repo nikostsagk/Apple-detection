@@ -198,7 +198,7 @@ class Generator(keras.utils.Sequence):
 
             # apply color permutation with bgr_permutation_chance
             bgr_permutation_chance = 0.25
-            if np.random.uniform(0, 1) , bgr_permutation_chance:
+            if np.random.uniform(0, 1) < bgr_permutation_chance:
                 bgr_permutation = np.random.choice(3, 3, replace=False)
                 image = image[...,bgr_permutation]
                 
