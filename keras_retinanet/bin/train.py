@@ -86,7 +86,7 @@ def model_with_weights(model, weights, skip_mismatch):
 def create_models(backbone_retinanet, num_classes, weights, multi_gpu=0,
                   freeze_backbone=False, lr=1e-5, momentum=0.9, sgd=False, 
                   alpha=0.25, gamma=2.0, nms_threshold=0.5, nms_score=0.05, 
-                  nms_detections=300, config=None, regularization=None):
+                  nms_detections=300, config=None, regularization=False):
     """ Creates three models (model, training_model, prediction_model).
 
     Args
@@ -125,7 +125,7 @@ def create_models(backbone_retinanet, num_classes, weights, multi_gpu=0,
         
         # Add weight decay (L2 regularization)
         if regularization:
-            for layer in model.layers[:19]:
+            for layer in model.layers:
                 layer.kernel_regularizer = keras.regularizers.l2(1e-4)
 
         training_model = model
