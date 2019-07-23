@@ -108,7 +108,7 @@ def parse_args(args):
     parser.add_argument('--image-min-side',   help='Rescale the image so the smallest side is min_side.', type=int, default=800)
     parser.add_argument('--image-max-side',   help='Rescale the image if the largest side is larger than max_side.', type=int, default=1333)
     parser.add_argument('--config',           help='Path to a configuration parameters .ini file (only used with --convert-model).')
-    parser.add_argument('--logs',             help='Path to save statistics like the PR curves.', action='store_true')
+    parser.add_argument('--logs',             help='Path to save statistics like the PR curves.')
 
     #NMS arguments
     parser.add_argument('--nms-threshold', help='Threshold for the IoU value to determine when a box should be suppressed.', dest='nms_threshold', type=float, default=0.5)
