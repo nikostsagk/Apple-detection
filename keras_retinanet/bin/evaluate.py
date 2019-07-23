@@ -219,7 +219,8 @@ def main(args=None):
         # save stats
         if args.logs:
             import numpy as np
-            np.save(args.logs, pr_curves)
+            makedirs(args.logs)
+            np.save(os.path.join(args.logs, 'pr_curves'), pr_curves)
             
 if __name__ == '__main__':
     main()
