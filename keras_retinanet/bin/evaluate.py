@@ -35,7 +35,16 @@ from ..utils.config import read_config_file, parse_anchor_parameters
 from ..utils.eval import evaluate
 from ..utils.keras_version import check_keras_version
 
-
+def makedirs(path):
+    # Intended behavior: try to create the directory,
+    # pass if the directory exists already, fails otherwise.
+    # Meant for Python 2.7/3.n compatibility.
+    try:
+        os.makedirs(path)
+    except OSError:
+        if not os.path.isdir(path):
+            raise
+            
 def get_session():
     """ Construct a modified tf session.
     """
