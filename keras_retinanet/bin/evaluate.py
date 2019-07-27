@@ -197,7 +197,7 @@ def main(args=None):
             #      generator.label_to_name(label), 'with average precision: {:.4f}'.format(average_precision))
             total_instances.append(num_annotations)
             precisions.append(average_precision)
-            f1_scores.append(np.max(pr_curves[label]['f1_score']))
+            f1_scores.append(max(pr_curves[label]['f1_score']))
 
         if sum(total_instances) == 0:
             print('No test instances found.')
