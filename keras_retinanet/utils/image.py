@@ -261,8 +261,8 @@ class VisualEffect:
     ):
         self.contrast_factor = contrast_factor
         self.brightness_delta = brightness_delta
-        self.blurring = True if blurring_chance >= _uniform(0,1) else False
-        self.bgr_permutation = True if bgr_permutation_chance >= _uniform(0,1) else False
+        self.blurring = True if blurring_chance >= _uniform((0,1)) else False
+        self.bgr_permutation = True if bgr_permutation_chance >= _uniform((0,1)) else False
         self.hue_delta = hue_delta
         self.saturation_factor = saturation_factor
     
@@ -322,6 +322,8 @@ def random_visual_effect_generator(
             yield VisualEffect(
                 contrast_factor=_uniform(contrast_range),
                 brightness_delta=_uniform(brightness_range),
+                blurring_chance=blurring_chance,
+                bgr_permutation_chance=bgr_permutation_chance,
                 hue_delta=_uniform(hue_range),
                 saturation_factor=_uniform(saturation_range),
             )
