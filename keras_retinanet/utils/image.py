@@ -281,18 +281,18 @@ class VisualEffect:
         if self.bgr_permutation:
             image = adjust_bgr_order(image)
 
-         if self.hue_delta or self.saturation_factor:
+        if self.hue_delta or self.saturation_factor:
 
-             image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+            image = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
 
-             if self.hue_delta:
+            if self.hue_delta:
                 image = adjust_hue(image, self.hue_delta)
             if self.saturation_factor:
                 image = adjust_saturation(image, self.saturation_factor)
 
              image = cv2.cvtColor(image, cv2.COLOR_HSV2BGR)
 
-         return image
+        return image
 
 
 def random_visual_effect_generator(
@@ -326,7 +326,7 @@ def random_visual_effect_generator(
                 saturation_factor=_uniform(saturation_range),
             )
 
-     return _generate()
+    return _generate()
 
 
 def adjust_contrast(image, factor):
