@@ -55,7 +55,7 @@ def _compute_ap(recall, precision):
     return ap
 
 
-def _get_detections(generator, model, score_threshold=0.05, max_detections=100, save_path=None):
+def _get_detections(generator, model, score_threshold=0.05, max_detections=100, save_path=None, verbose=1):
     """ Get the detections from the model using the generator.
 
     The result is a list of lists such that the size is:
@@ -117,7 +117,8 @@ def _get_detections(generator, model, score_threshold=0.05, max_detections=100, 
 
             all_detections[i][label] = image_detections[image_detections[:, -1] == label, :-1]
 
-    print('\nMean elapsed time for {} images: {}'.format(generator.size(), processed_time[1:].mean()))
+    if verbose==1:
+        print('\nMean elapsed time for {} images: {}'.format(generator.size(), processed_time[1:].mean()))
 
     return all_detections
 
@@ -155,7 +156,8 @@ def evaluate(
     iou_threshold=0.5,
     score_threshold=0.05,
     max_detections=100,
-    save_path=None
+    save_path=None,
+    verbose=1
 ):
     """ Evaluate a given dataset using a given model.
 
@@ -170,7 +172,7 @@ def evaluate(
         A dict mapping class names to mAP scores.
     """
     # gather all detections and annotations
-    all_detections     = _get_detections(generator, model, score_threshold=score_threshold, max_detections=max_detections, save_path=save_path)
+    all_detections     = _get_detections(generator, model, score_threshold=score_threshold, max_detections=max_detections, save_path=save_path, verbose=verbose)
     all_annotations    = _get_annotations(generator)
     average_precisions = {}
     pr_curves = {}
@@ -184,6 +186,7 @@ def evaluate(
 
     true_positives = {}
     false_positives = {}
+    average_iou = {}
 
     for label in range(generator.num_classes()):
         if not generator.has_label(label):
@@ -193,6 +196,7 @@ def evaluate(
         true_positives[label]  = np.zeros((0,))
         scores          = np.zeros((0,))
         num_annotations = 0.0
+        average_iou[label] = np.zeros((0,))
 
         for i in range(generator.size()):
             detections           = all_detections[i][label]
@@ -215,6 +219,7 @@ def evaluate(
                 if max_overlap >= iou_threshold and assigned_annotation not in detected_annotations:
                     false_positives[label] = np.append(false_positives[label], 0)
                     true_positives[label]  = np.append(true_positives[label], 1)
+                    average_iou[label] = np.append(average_iou[label], max_overlap)
                     detected_annotations.append(assigned_annotation)
                 else:
                     false_positives[label] = np.append(false_positives[label], 1)
@@ -250,6 +255,7 @@ def evaluate(
         pr_curves[label]['precision'] = precision
         pr_curves[label]['recall'] = recall
         pr_curves[label]['f1_score'] = f1_score
+        pr_curves[label]['average_iou'] = average_iou[label].mean()
         pr_curves[label]['TP'] = true_positives[label]
         pr_curves[label]['FP'] = false_positives[label]
 

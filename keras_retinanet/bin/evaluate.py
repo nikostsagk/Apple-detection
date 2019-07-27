@@ -18,6 +18,7 @@ import argparse
 import os
 import sys
 
+import numpy as np
 import keras
 import tensorflow as tf
 
@@ -192,12 +193,14 @@ def main(args=None):
         total_instances = []
         precisions = []
         f1_scores = []
+        mean_ious = []
         for label, (average_precision, num_annotations) in average_precisions.items():
             #print('{:.0f} instances of class'.format(num_annotations),
             #      generator.label_to_name(label), 'with average precision: {:.4f}'.format(average_precision))
             total_instances.append(num_annotations)
             precisions.append(average_precision)
             f1_scores.append(max(pr_curves[label]['f1_score']))
+            mean_ious.append(np.mean(pr_curves[label]['average_iou']))
 
         if sum(total_instances) == 0:
             print('No test instances found.')
@@ -208,6 +211,7 @@ def main(args=None):
 
         mean_ap = sum(precisions) / sum(x > 0 for x in total_instances)
         mean_f1 = sum(f1_scores) / sum(x > 0 for x in total_instances)
+        mean_iou = sum(mean_ious) / sum(x > 0 for x in total_instances)
 
         for label in range(generator.num_classes()):
             class_label     = generator.label_to_name(label)
@@ -219,11 +223,10 @@ def main(args=None):
             print('\nClass {}: Instances: {} | Predictions: {} | False positives: {} | True positives: {}'.format(
                     class_label, instances, predictions, false_positives, true_positives))
 
-        print('mAP: {:.4f}'.format(mean_ap), 'mF1-score: {:.4f}'.format(mean_f1))
+        print('mAP: {:.4f}'.format(mean_ap), 'mF1-score: {:.4f}'.format(mean_f1), 'mIoU: {:.4f}'.format(mean_iou))
 
         # save stats
         if args.logs:
-            import numpy as np
             makedirs(args.logs)
             np.save(os.path.join(args.logs, 'pr_curves'), pr_curves)
             
