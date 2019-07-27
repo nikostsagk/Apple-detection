@@ -37,6 +37,7 @@ from ..utils.transform import random_transform_generator
 from ..utils.visualization import draw_annotations, draw_boxes, draw_caption
 from ..utils.anchors import anchors_for_shape, compute_gt_annotations
 from ..utils.config import read_config_file, parse_anchor_parameters
+from ..utils.image import random_visual_effect_generator
 
 
 def create_generator(args):
@@ -47,14 +48,17 @@ def create_generator(args):
     """
     # create random transform generator for augmenting training data
     transform_generator = random_transform_generator(
-        min_rotation=0,  #Rotation is gonna be either 0
-        max_rotation=90, #or 90 degrees.
-        min_translation=(-0.1, -0.1),
-        max_translation=(0.1, 0.1),
-        min_scaling=(0.9, 0.9),
-        max_scaling=(1.1, 1.1),
         flip_x_chance=0.5,
         flip_y_chance=0.5,
+    )
+
+    visual_effect_generator = random_visual_effect_generator(
+        contrast_range=(0.9, 1.1),
+        brightness_range=(-.1, .1),
+        blurring_chance=0.25,
+        bgr_permutation_chance=0.25,
+        hue_range=(-0.05, 0.05),
+        saturation_range=(0.95, 1.05)
     )
 
     if args.dataset_type == 'coco':
@@ -65,6 +69,7 @@ def create_generator(args):
             args.coco_path,
             args.coco_set,
             transform_generator=transform_generator,
+            visual_effect_generator=visual_effect_generator,
             image_min_side=args.image_min_side,
             image_max_side=args.image_max_side,
             config=args.config
@@ -74,6 +79,7 @@ def create_generator(args):
             args.pascal_path,
             args.pascal_set,
             transform_generator=transform_generator,
+            visual_effect_generator=visual_effect_generator,
             image_min_side=args.image_min_side,
             image_max_side=args.image_max_side,
             config=args.config
@@ -83,6 +89,7 @@ def create_generator(args):
             args.annotations,
             args.classes,
             transform_generator=transform_generator,
+            visual_effect_generator=visual_effect_generator,
             image_min_side=args.image_min_side,
             image_max_side=args.image_max_side,
             config=args.config
@@ -95,6 +102,7 @@ def create_generator(args):
             labels_filter=args.labels_filter,
             parent_label=args.parent_label,
             annotation_cache_dir=args.annotation_cache_dir,
+            visual_effect_generator=visual_effect_generator,
             transform_generator=transform_generator,
             image_min_side=args.image_min_side,
             image_max_side=args.image_max_side,
@@ -105,6 +113,7 @@ def create_generator(args):
             args.kitti_path,
             subset=args.subset,
             transform_generator=transform_generator,
+            visual_effect_generator=visual_effect_generator,
             image_min_side=args.image_min_side,
             image_max_side=args.image_max_side,
             config=args.config
@@ -178,6 +187,7 @@ def run(generator, args, anchor_params):
             # apply random transformations
             if args.random_transform:
                 image, annotations = generator.random_transform_group_entry(image, annotations)
+                image, annotations = generator.random_visual_effect_group_entry(image, annotations)
 
             # resize the image and annotations
             if args.resize:
@@ -189,7 +199,7 @@ def run(generator, args, anchor_params):
 
             # draw anchors on the image
             if args.anchors:
-                draw_boxes(image, anchors[positive_indices], (255, 255, 0))
+                draw_boxes(image, anchors[positive_indices], color=(255, 255, 0))
 
             # draw annotations on the image
             if args.annotations:
