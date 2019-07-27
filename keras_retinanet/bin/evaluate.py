@@ -214,7 +214,7 @@ def main(args=None):
             instances       = int(total_instances[label])
             predictions     = len(pr_curves[label]['precision'])
             true_positives  = int(pr_curves[label]['TP'][-1]) if len(pr_curves[label]['TP']) > 0 else 0
-            false_positives = int(pr_curves[label]['TP'][-1]) if len(pr_curves[label]['FP']) > 0 else 0
+            false_positives = int(pr_curves[label]['FP'][-1]) if len(pr_curves[label]['FP']) > 0 else 0
 
             print('\nClass {}: Instances: {} | Predictions: {} | False positives: {} | True positives: {}'.format(
                     class_label, instances, predictions, false_positives, true_positives))
