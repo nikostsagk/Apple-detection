@@ -222,6 +222,10 @@ def main(args=None):
 
     # start evaluation
     iou_thresholds = [0.2, 0.5, 0.75]
+    mean_ap = {}
+    mean_f1 = {}
+    mean_iou = {}
+
     if args.dataset_type == 'coco':
         from ..utils.coco_eval import evaluate_coco
         evaluate_coco(generator, model, args.score_threshold)
@@ -237,10 +241,10 @@ def main(args=None):
                 verbose=0
             )
 
-            mean_ap, mean_f1, mean_iou = compute_stats(average_precisions, pr_curves, iou, generator)
+            mean_ap[iou], mean_f1[iou], mean_iou[iou] = compute_stats(average_precisions, pr_curves, iou, generator)
 
         for iou in iou_thresholds:
-            print('IoU@{} =>'.format(iou),  'mAP: {:.4f}'.format(mean_ap), 'mF1-score: {:.4f}'.format(mean_f1), 'mIoU: {:.4f}'.format(mean_iou))
+            print('IoU@{} =>'.format(iou),  'mAP: {:.4f}'.format(mean_ap[iou]), 'mF1-score: {:.4f}'.format(mean_f1[iou]), 'mIoU: {:.4f}'.format(mean_iou[iou]))
 
         # save stats
         if args.logs:
