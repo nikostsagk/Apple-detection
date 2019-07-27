@@ -290,7 +290,7 @@ class VisualEffect:
             if self.saturation_factor:
                 image = adjust_saturation(image, self.saturation_factor)
 
-             image = cv2.cvtColor(image, cv2.COLOR_HSV2BGR)
+            image = cv2.cvtColor(image, cv2.COLOR_HSV2BGR)
 
         return image
 
