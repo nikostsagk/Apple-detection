@@ -48,8 +48,8 @@ def create_generator(args):
     """
     # create random transform generator for augmenting training data
     transform_generator = random_transform_generator(
-        flip_x_chance=0.5,
-        flip_y_chance=0.5,
+        flip_x_chance=0.5, #flip_x_chance=0.5,
+        flip_y_chance=0.5, #flip_y_chance=0.5,
     )
 
     visual_effect_generator = random_visual_effect_generator(
@@ -214,7 +214,9 @@ def run(generator, args, anchor_params):
             if args.display_name:
                 fontScale = image.shape[0] / 800
                 draw_caption(image, [0, image.shape[0]], os.path.basename(generator.image_path(i)), fontScale)
-                
+            print(image[0:5,0:5,0])
+            print(image[0:5,0:5,1])
+            print(image[0:5,0:5,2])
         cv2.imshow('Image', image)
         key = cv2.waitKey()
 
