@@ -54,32 +54,6 @@ def _compute_ap(recall, precision):
     ap = np.sum((mrec[i + 1] - mrec[i]) * mpre[i + 1])
     return ap
 
-def _compute_af1(recall, f1_score):
-    """ Compute the average f1 score, given the recall and precision curves.
-
-    # Arguments
-        recall:     The recall curve (list).
-        precision:  The precision curve (list).
-    # Returns
-        The average f1 score as computed the average precision
-     """
-
-     # correct aF1 calculation
-     # first append sentinel values at the end
-    mrec = np.concatenate(([0.], recall, [1.]))
-    mf1 = np.concatenate(([0.], f1_score, [0.]))
-
-    # compute the precision envelope
-    for i in range(mf1.size - 1, 0, -1):
-        mf1[i - 1] = np.maximum(mf1[i - 1], mf1[i])
-
-    # to calculate area under F1 curve, look for points
-    # where X axis (recall) changes value
-    i = np.where(mrec[1:] != mrec[:-1])[0]
-
-    # and sum (\Delta recall) * f1
-    af1 = np.sum((mrec[i + 1] - mrec[i]) * mf1[i + 1])
-    return af1    
 
 def _get_detections(generator, model, score_threshold=0.05, max_detections=100, save_path=None):
     """ Get the detections from the model using the generator.
@@ -131,8 +105,8 @@ def _get_detections(generator, model, score_threshold=0.05, max_detections=100, 
         image_detections = np.concatenate([image_boxes, np.expand_dims(image_scores, axis=1), np.expand_dims(image_labels, axis=1)], axis=1)
 
         if save_path is not None:
-            draw_annotations(raw_image, generator.load_annotations(i), label_to_name=generator.label_to_name)
-            draw_detections(raw_image, image_boxes, image_scores, image_labels, label_to_name=generator.label_to_name, score_threshold=score_threshold)
+            draw_annotations(raw_image, generator.load_annotations(i), color=(0,255,0), label_to_name=generator.label_to_name)
+            draw_detections(raw_image, image_boxes, image_scores, image_labels, color=(0,0,255), label_to_name=generator.label_to_name, score_threshold=score_threshold)
 
             cv2.imwrite(os.path.join(save_path, '{}.png'.format(i)), raw_image)
 
@@ -199,7 +173,6 @@ def evaluate(
     all_detections     = _get_detections(generator, model, score_threshold=score_threshold, max_detections=max_detections, save_path=save_path)
     all_annotations    = _get_annotations(generator)
     average_precisions = {}
-    average_f1_scores = {}
     pr_curves = {}
 
     # all_detections = pickle.load(open('all_detections.pkl', 'rb'))
@@ -250,7 +223,6 @@ def evaluate(
         # no annotations -> AP for this class is 0 (is this correct?)
         if num_annotations == 0:
             average_precisions[label] = 0, 0
-            average_f1_scores[label] = 0, 0
             continue
 
         # sort by score
@@ -273,14 +245,11 @@ def evaluate(
         average_precision  = _compute_ap(recall, precision)
         average_precisions[label] = average_precision, num_annotations
 
-        # compute average F1 score
-        average_f1_score = _compute_af1(recall, f1_score)
-        average_f1_scores[label] = average_f1_score, num_annotations
-
         # store pr_curves
         pr_curves[label] = {}
         pr_curves[label]['precision'] = precision
         pr_curves[label]['recall'] = recall
         pr_curves[label]['f1_score'] = f1_score
+        pr_curves[labels]['TP_FP'] = true_positives, false_positives
 
-    return average_precisions, average_f1_scores, true_positives, false_positives, pr_curves
+    return average_precisions, pr_curves

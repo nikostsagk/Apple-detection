@@ -179,7 +179,7 @@ def main(args=None):
         from ..utils.coco_eval import evaluate_coco
         evaluate_coco(generator, model, args.score_threshold)
     else:
-        average_precisions, average_f1_scores, true_positives, false_positives, pr_curves = evaluate(
+        average_precisions, pr_curves = evaluate(
             generator,
             model,
             iou_threshold=args.iou_threshold,
@@ -191,18 +191,13 @@ def main(args=None):
         # print evaluation
         total_instances = []
         precisions = []
+        f1_scores = []
         for label, (average_precision, num_annotations) in average_precisions.items():
             #print('{:.0f} instances of class'.format(num_annotations),
             #      generator.label_to_name(label), 'with average precision: {:.4f}'.format(average_precision))
             total_instances.append(num_annotations)
             precisions.append(average_precision)
-
-        # compute per class average f1
-        f1_scores = []
-        for label, (average_f1_score, num_annotations) in average_f1_scores.items():
-            #print('{:.0f} instances of class'.format(num_annotations),
-            #        generator.label_to_name(label), 'with average F1-score: {:.4f} \n'.format(average_f1_score))
-            f1_scores.append(average_f1_score)
+            f1_scores.append(np.max(pr_curves[label]['f1_score']))
 
         if sum(total_instances) == 0:
             print('No test instances found.')
@@ -215,15 +210,16 @@ def main(args=None):
         mean_f1 = sum(f1_scores) / sum(x > 0 for x in total_instances)
 
         for label in range(generator.num_classes()):
-            class_label = generator.label_to_name(label)
-            instances = int(total_instances[label])
-            predictions = len(true_positives[label])
-            false_positives = int(false_positives[label][-1]) if len(false_positives[label]) > 0 else 0
-            true_positives = int(true_positives[label][-1]) if len(true_positives[label]) > 0 else 0
+            class_label     = self.generator.label_to_name(label)
+            instances       = int(total_instances[label])
+            predictions     = len(logs[label]['precision'])
+            true_positives  = int(logs[label]['TP_FP'][-1][0]) if len(logs[label]['TP_FP']) > 0 else 0
+            false_positives = int(logs[label]['TP_FP'][-1][1]) if len(logs[label]['TP_FP']) > 0 else 0
 
             print('\nClass {}: Instances: {} | Predictions: {} | False positives: {} | True positives: {}'.format(
                     class_label, instances, predictions, false_positives, true_positives))
-            print('mAP: {:.4f}'.format(mean_ap), 'mF1-score: {:.4f}'.format(mean_f1))
+
+        print('mAP: {:.4f}'.format(mean_ap), 'mF1-score: {:.4f}'.format(mean_f1))
 
         # save stats
         if args.logs:

@@ -60,7 +60,7 @@ class Evaluate(keras.callbacks.Callback):
         logs = logs or {}
 
         # run evaluation
-        average_precisions, average_f1_scores, true_positives, false_positives, _ = evaluate(
+        average_precisions, pr_curves = evaluate(
             self.generator,
             self.model,
             iou_threshold=self.iou_threshold,
@@ -69,30 +69,25 @@ class Evaluate(keras.callbacks.Callback):
             save_path=self.save_path
         )
 
-        # compute per class average precision
+        # compute per class average precision and F1-score
         total_instances = []
         precisions = []
+        f1_scores = []
+
         for label, (average_precision, num_annotations ) in average_precisions.items():
             if self.verbose == 2:
                 print('{:.0f} instances of class'.format(num_annotations),
                       self.generator.label_to_name(label), 'with average precision: {:.4f}'.format(average_precision))
             total_instances.append(num_annotations)
             precisions.append(average_precision)
-
-        # compute per class average f1
-        f1_scores = []
-        for label, (average_f1_score, num_annotations) in average_f1_scores.items():
-            if self.verbose == 2:
-                print('{:.0f} instances of class'.format(num_annotations),
-                      self.generator.label_to_name(label), 'with average F1-score: {:.4f} \n'.format(average_f1_score))
-            f1_scores.append(average_f1_score)
+            f1_scores.append(np.max(pr_curves[label]['f1_score']))
 
         if self.weighted_average:
             self.mean_ap = sum([a * b for a, b in zip(total_instances, precisions)]) / sum(total_instances)
             self.mean_f1 = sum([a * b for a, b in zip(total_instances, f1_scores)]) / sum(total_instances)
         else:
             self.mean_ap = sum(precisions) / sum(x > 0 for x in total_instances)
-            self.mean_f1 = sum(f1_scores) / sum(x > 0 for x in total_instances)
+            self.mean_f1 = sum(f1_scores) / sum(x > 0 for x in total_instances) 
 
         if self.tensorboard is not None and self.tensorboard.writer is not None:
             import tensorflow as tf
@@ -103,20 +98,23 @@ class Evaluate(keras.callbacks.Callback):
             self.tensorboard.writer.add_summary(summary, epoch)
 
         logs['mAP'] = self.mean_ap
-        logs['F1-score'] = self.mean_f1
+        logs['mF1'] = self.mean_f1
+        for label in range(self.generator.num_classes()):
+            logs[label]['precision'] = pr_curves[label]['precision']
+            logs[label]['recall'] = pr_curves[label]['recall']
+            logs[label]['f1_score'] = pr_curves[label]['f1_score']
+            logs[label]['TP_FP'] = pr_curves[label]['TP_FP']
 
         if self.verbose == 1:
             for label in range(self.generator.num_classes()):
-                class_label = self.generator.label_to_name(label)
-                instances = int(total_instances[label])
-                predictions = len(true_positives[label])
-                false_positives = int(false_positives[label][-1]) if len(false_positives[label]) > 0 else 0
-                true_positives = int(true_positives[label][-1]) if len(true_positives[label]) > 0 else 0
-
-                logs['True positives'] = true_positives
-                logs['False positives'] = false_positives
+                class_label     = self.generator.label_to_name(label)
+                instances       = int(total_instances[label])
+                predictions     = len(logs[label]['precision'])
+                true_positives  = int(logs[label]['TP_FP'][-1][0]) if len(logs[label]['TP_FP']) > 0 else 0
+                false_positives = int(logs[label]['TP_FP'][-1][1]) if len(logs[label]['TP_FP']) > 0 else 0
 
                 print('\nClass {}: Instances: {} | Predictions: {} | False positives: {} | True positives: {}'.format(
-                    class_label, instances, predictions, false_positives, true_positives))
+                    class_label, instances, predictions, true_positives, false_positives))
+                
             print('mAP: {:.4f}'.format(self.mean_ap), 'mF1-score: {:.4f}'.format(self.mean_f1))
 
