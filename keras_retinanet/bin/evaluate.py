@@ -212,9 +212,9 @@ def main(args=None):
         for label in range(generator.num_classes()):
             class_label     = generator.label_to_name(label)
             instances       = int(total_instances[label])
-            predictions     = len(logs[label]['precision'])
-            true_positives  = int(logs[label]['TP_FP'][-1][0]) if len(logs[label]['TP_FP']) > 0 else 0
-            false_positives = int(logs[label]['TP_FP'][-1][1]) if len(logs[label]['TP_FP']) > 0 else 0
+            predictions     = len(pr_curves[label]['precision'])
+            true_positives  = int(pr_curves[label]['TP_FP'][-1][0]) if len(pr_curves[label]['TP_FP']) > 0 else 0
+            false_positives = int(pr_curves[label]['TP_FP'][-1][1]) if len(pr_curves[label]['TP_FP']) > 0 else 0
 
             print('\nClass {}: Instances: {} | Predictions: {} | False positives: {} | True positives: {}'.format(
                     class_label, instances, predictions, false_positives, true_positives))
