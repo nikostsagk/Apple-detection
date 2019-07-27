@@ -103,15 +103,16 @@ class Evaluate(keras.callbacks.Callback):
             logs[label]['precision'] = pr_curves[label]['precision']
             logs[label]['recall'] = pr_curves[label]['recall']
             logs[label]['f1_score'] = pr_curves[label]['f1_score']
-            logs[label]['TP_FP'] = pr_curves[label]['TP_FP']
+            logs[label]['TP'] = pr_curves[label]['TP']
+            logs[label]['FP'] = pr_curves[label]['FP']
 
         if self.verbose == 1:
             for label in range(self.generator.num_classes()):
                 class_label     = self.generator.label_to_name(label)
                 instances       = int(total_instances[label])
                 predictions     = len(logs[label]['precision'])
-                true_positives  = int(logs[label]['TP_FP'][-1][0]) if len(logs[label]['TP_FP']) > 0 else 0
-                false_positives = int(logs[label]['TP_FP'][-1][1]) if len(logs[label]['TP_FP']) > 0 else 0
+                true_positives  = int(logs[label]['TP'][-1]) if len(logs[label]['TP']) > 0 else 0
+                false_positives = int(logs[label]['FP'][-1]) if len(logs[label]['FP']) > 0 else 0
 
                 print('\nClass {}: Instances: {} | Predictions: {} | False positives: {} | True positives: {}'.format(
                     class_label, instances, predictions, true_positives, false_positives))
