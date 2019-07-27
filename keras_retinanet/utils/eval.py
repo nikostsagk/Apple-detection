@@ -250,6 +250,6 @@ def evaluate(
         pr_curves[label]['precision'] = precision
         pr_curves[label]['recall'] = recall
         pr_curves[label]['f1_score'] = f1_score
-        pr_curves[labels]['TP_FP'] = true_positives, false_positives
+        pr_curves[label]['TP_FP'] = true_positives, false_positives
 
     return average_precisions, pr_curves
