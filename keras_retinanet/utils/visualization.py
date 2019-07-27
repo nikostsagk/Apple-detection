@@ -30,7 +30,7 @@ def draw_box(image, box, color, thickness=1):
         thickness : The thickness of the lines to draw a box with.
     """
     b = np.array(box).astype(int)
-    cv2.rectangle(image, (b[0], b[1]), (b[2], b[3]), color, thickness, cv2.LINE_AA)
+    cv2.rectangle(image, (b[0], b[1]), (b[2], b[3]), color, thickness) #remove cv2.LINE_AA
 
 
 def draw_caption(image, box, caption, fontScale=1):
@@ -42,8 +42,8 @@ def draw_caption(image, box, caption, fontScale=1):
         caption : String containing the text to draw.
     """
     b = np.array(box).astype(int)
-    cv2.putText(image, caption, (b[0], b[1] - 10), cv2.FONT_HERSHEY_DUPLEX, fontScale, (0, 0, 0), 2)
-    cv2.putText(image, caption, (b[0], b[1] - 10), cv2.FONT_HERSHEY_DUPLEX, fontScale, (255, 255, 255), 1)
+    cv2.putText(image, caption, (b[0], b[1] - 3), cv2.FONT_HERSHEY_DUPLEX, fontScale, (0, 0, 0), 2)
+    cv2.putText(image, caption, (b[0], b[1] - 3), cv2.FONT_HERSHEY_DUPLEX, fontScale, (255, 255, 255), 1)
 
 
 def draw_boxes(image, boxes, color, thickness=1):
@@ -104,5 +104,5 @@ def draw_annotations(image, annotations, color=(0, 255, 0), label_to_name=None):
         c       = color if color is not None else label_color(label)
         caption = '{}'.format(label_to_name(label) if label_to_name else label)
         fontScale = 0.7 * image.shape[0] / 800
-        draw_caption(image, annotations['bboxes'][i], caption, fontScale)
+        #draw_caption(image, annotations['bboxes'][i], caption, fontScale)
         draw_box(image, annotations['bboxes'][i], color=c)
