@@ -210,7 +210,7 @@ def main(args=None):
         mean_f1 = sum(f1_scores) / sum(x > 0 for x in total_instances)
 
         for label in range(generator.num_classes()):
-            class_label     = self.generator.label_to_name(label)
+            class_label     = generator.label_to_name(label)
             instances       = int(total_instances[label])
             predictions     = len(logs[label]['precision'])
             true_positives  = int(logs[label]['TP_FP'][-1][0]) if len(logs[label]['TP_FP']) > 0 else 0
