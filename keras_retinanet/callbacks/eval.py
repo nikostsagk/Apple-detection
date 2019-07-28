@@ -100,24 +100,16 @@ class Evaluate(keras.callbacks.Callback):
 
         logs['mAP'] = self.mean_ap
         logs['mF1'] = self.mean_f1
-        for label in range(self.generator.num_classes()):
-            logs[label] = {}
-            logs[label]['precision'] = pr_curves[label]['precision']
-            logs[label]['recall'] = pr_curves[label]['recall']
-            logs[label]['f1_score'] = pr_curves[label]['f1_score']
-            logs[label]['TP'] = pr_curves[label]['TP']
-            logs[label]['FP'] = pr_curves[label]['FP']
 
         if self.verbose == 1:
             for label in range(self.generator.num_classes()):
-                class_label     = self.generator.label_to_name(label)
-                instances       = int(total_instances[label])
-                predictions     = len(logs[label]['precision'])
-                true_positives  = int(logs[label]['TP'][-1]) if len(logs[label]['TP']) > 0 else 0
-                false_positives = int(logs[label]['FP'][-1]) if len(logs[label]['FP']) > 0 else 0
-
+                true_positives = int(pr_curves[label]['TP'][-1]) if len(pr_curves[label]['TP']) > 0 else 0
+                false_negatives = int(pr_curves[label]['FP'][-1]) if len(pr_curves[label]['FP']) > 0 else 0
                 print('\nClass {}: Instances: {} | Predictions: {} | False positives: {} | True positives: {}'.format(
-                    class_label, instances, predictions, true_positives, false_positives))
-                
+                    self.generator.label_to_name(label),
+                    int(total_instances[label]),
+                    true_positives + false_negatives,
+                    false_negatives, true_positives))
+                    
             print('mAP: {:.4f}'.format(self.mean_ap), 'mF1-score: {:.4f}'.format(self.mean_f1))
 
