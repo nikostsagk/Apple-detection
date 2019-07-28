@@ -100,6 +100,7 @@ class Evaluate(keras.callbacks.Callback):
         logs['mAP'] = self.mean_ap
         logs['mF1'] = self.mean_f1
         for label in range(self.generator.num_classes()):
+            logs[label] = {}
             logs[label]['precision'] = pr_curves[label]['precision']
             logs[label]['recall'] = pr_curves[label]['recall']
             logs[label]['f1_score'] = pr_curves[label]['f1_score']
