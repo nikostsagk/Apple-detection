@@ -15,6 +15,7 @@ limitations under the License.
 """
 
 import keras
+import numpy as np
 from ..utils.eval import evaluate
 
 
