@@ -52,10 +52,10 @@ for root, dirs, files in os.walk(annotations_path):
                         row.append('apple') # class
 
                         # Fix boxes on the fringe
-                        #if (row[1] < 0) : row[1] = 0
-                        #if (row[2] < 0) : row[2] = 0
-                        #if (row[3] > 307) : row[3] = 307
-                        #if (row[4] > 201) : row[4] = 201
+                        if (row[1] < 0) : row[1] = 0
+                        if (row[2] < 0) : row[2] = 0
+                        if (row[3] > 307) : row[3] = 307
+                        if (row[4] > 201) : row[4] = 201
 
                         for key in data:
                                 if is_in_set(key, file.replace('.csv',''), sets_path) == True:
