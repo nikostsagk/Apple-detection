@@ -74,6 +74,7 @@ class Evaluate(keras.callbacks.Callback):
         total_instances = []
         precisions = []
         f1_scores = []
+        mean_ious = []
 
         for label, (average_precision, num_annotations ) in average_precisions.items():
             if self.verbose == 2:
@@ -82,13 +83,16 @@ class Evaluate(keras.callbacks.Callback):
             total_instances.append(num_annotations)
             precisions.append(average_precision)
             f1_scores.append(np.max(pr_curves[label]['f1_score']))
+            mean_ious.append(np.mean(pr_curves[label]['average_iou']))
 
         if self.weighted_average:
             self.mean_ap = sum([a * b for a, b in zip(total_instances, precisions)]) / sum(total_instances)
             self.mean_f1 = sum([a * b for a, b in zip(total_instances, f1_scores)]) / sum(total_instances)
+            self.mean_iou = sum(mean_ious) / sum(x > 0 for x in total_instances)
         else:
             self.mean_ap = sum(precisions) / sum(x > 0 for x in total_instances)
-            self.mean_f1 = sum(f1_scores) / sum(x > 0 for x in total_instances) 
+            self.mean_f1 = sum(f1_scores) / sum(x > 0 for x in total_instances)
+            self.mean_iou = sum(mean_ious) / sum(x > 0 for x in total_instances)
 
         if self.tensorboard is not None and self.tensorboard.writer is not None:
             import tensorflow as tf
@@ -100,6 +104,7 @@ class Evaluate(keras.callbacks.Callback):
 
         logs['mAP'] = self.mean_ap
         logs['mF1'] = self.mean_f1
+        logs['mIoU'] = self.mean_iou
 
         if self.verbose == 1:
             for label in range(self.generator.num_classes()):
@@ -111,5 +116,5 @@ class Evaluate(keras.callbacks.Callback):
                     true_positives + false_negatives,
                     false_negatives, true_positives))
                     
-            print('mAP: {:.4f}'.format(self.mean_ap), 'mF1-score: {:.4f}'.format(self.mean_f1))
+            print('mAP: {:.4f}'.format(self.mean_ap), 'mF1-score: {:.4f}'.format(self.mean_f1), 'mIoU: {:.4f}'.format(self.mean_iou))
 
