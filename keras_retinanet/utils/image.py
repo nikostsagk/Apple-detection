@@ -54,11 +54,6 @@ def preprocess_image(x, mode='caffe'):
     # covert always to float32 to keep compatibility with opencv
     x = x.astype(np.float32)
 
-    #Before preprocessing remove mean from dataset
-    x[..., 0] -= 135.1935
-    x[..., 1] -= 121.3656
-    x[..., 2] -= 104.9435
-
     if mode == 'tf':
         x /= 127.5
         x -= 1.
@@ -70,6 +65,10 @@ def preprocess_image(x, mode='caffe'):
         x[..., 0] -= 135.1935
         x[..., 1] -= 121.3656
         x[..., 2] -= 104.9435
+    elif mode == 'caffe_acfr':
+        x[..., 0] -= (103.939 - 135.1935)
+        x[..., 1] -= (116.779 - 121.3656)
+        x[..., 2] -= (123.68  - 104.9435)
     elif mode == 'zcs':
         x = 2. * (x - 3.) / (255. - 3.) - 1.
 

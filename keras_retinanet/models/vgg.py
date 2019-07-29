@@ -60,10 +60,10 @@ class VGGBackbone(Backbone):
         if self.backbone not in allowed_backbones:
             raise ValueError('Backbone (\'{}\') not in allowed backbones ({}).'.format(self.backbone, allowed_backbones))
 
-    def preprocess_image(self, inputs):
+    def preprocess_image(self, inputs, mode='caffe'):
         """ Takes as input an image and prepares it for being passed through the network.
         """
-        return preprocess_image(inputs, mode='caffe')
+        return preprocess_image(inputs, mode=mode)
 
 
 def vgg_retinanet(num_classes, backbone='vgg16', inputs=None, modifier=None, **kwargs):
