@@ -1,14 +1,4 @@
-'''
-
-Author        : Martin Zlocha
-Author's mail : zlocha.martin@gmail.com
-Source        : https://github.com/martinzlocha/anchor-optimization
-
-'''
-
 import warnings
-warnings.simplefilter("ignore")
-
 import csv
 import argparse
 import sys
@@ -16,13 +6,17 @@ import sys
 import numpy as np
 import scipy.optimize
 
+from PIL import Image
 from keras_retinanet.utils.compute_overlap import compute_overlap
 
 from keras_retinanet.preprocessing.csv_generator import _open_for_csv
 from keras_retinanet.utils.anchors import generate_anchors, AnchorParameters, anchors_for_shape
+from keras_retinanet.utils.image import compute_resize_scale
 
-SIZES = [32, 64, 128, 256, 512]
-STRIDES = [8, 16, 32, 64, 128]
+warnings.simplefilter("ignore")
+
+SIZES = [8, 16 ,32, 64, 128, 256, 512]
+STRIDES = [2, 4, 8, 16, 32, 64, 128]
 state = {'best_result': sys.maxsize}
 
 
@@ -41,7 +35,7 @@ def calculate_config(values, ratio_count):
 
 def base_anchors_for_shape(pyramid_levels=None, anchor_params=None):
     if pyramid_levels is None:
-        pyramid_levels = [3, 4, 5, 6, 7]
+        pyramid_levels = [2, 3, 4, 5, 6, 7]
 
     if anchor_params is None:
         anchor_params = AnchorParameters.default
@@ -86,7 +80,10 @@ def average_overlap(values, entries, state, image_shape, mode='focal', ratio_cou
         print('Current best anchor configuration')
         print(f'Ratios: {sorted(np.round(anchor_params.ratios, 3))}')
         print(f'Scales: {sorted(np.round(anchor_params.scales, 3))}')
-        print(f'Average overlap: {np.round(np.average(max_overlap), 3)}')
+
+        if include_stride:
+            print(f'Average overlap: {np.round(np.average(max_overlap), 3)}')
+
         print(f'Number of labels that don\'t have any matching anchor: {not_matched}')
         print()
 
@@ -96,7 +93,6 @@ def average_overlap(values, entries, state, image_shape, mode='focal', ratio_cou
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Optimize RetinaNet anchor configuration')
     parser.add_argument('annotations', help='Path to CSV file containing annotations for anchor optimization.')
-    parser.add_argument('--image-scaling', type=float, help='Scaling factor of the image.', default=1.0)
     parser.add_argument('--scales', type=int, help='Number of scales.', default=3)
     parser.add_argument('--ratios', type=int, help='Number of ratios, has to be an odd number.', default=3)
     parser.add_argument('--include-stride', action='store_true',
@@ -107,6 +103,12 @@ if __name__ == "__main__":
                              'Options: focal, avg, ce.')
     parser.add_argument('--popsize', type=int, default=15,
                         help='The total population size multiplier used by differential evolution.')
+    parser.add_argument('--no-resize', help='Disable image resizing.', dest='resize', action='store_false')
+    parser.add_argument('--image-min-side', help='Rescale the image so the smallest side is min_side.', type=int,
+                        default=800)
+    parser.add_argument('--image-max-side', help='Rescale the image if the largest side is larger than max_side.',
+                        type=int, default=1333)
+    parser.add_argument('--seed', type=int, help='Seed value to use for differential evolution.')
     args = parser.parse_args()
 
     if args.ratios % 2 != 1:
@@ -116,25 +118,37 @@ if __name__ == "__main__":
     max_x = 0
     max_y = 0
 
+    if args.seed:
+        seed = np.random.RandomState(args.seed)
+    else:
+        seed = np.random.RandomState()
+
     print('Loading object dimensions.')
 
     with _open_for_csv(args.annotations) as file:
         for line, row in enumerate(csv.reader(file, delimiter=',')):
             if row[1:5] != ['','','','']:
-                x1, y1, x2, y2 = list(map(lambda x: int(x) * args.image_scaling, row[1:5]))
+                x1, y1, x2, y2 = list(map(lambda x: int(x), row[1:5]))
 
-                if x1 and y1 and x2 and y2:
-                    max_x = max(x2, max_x)
-                    max_y = max(y2, max_y)
+                if not x1 or not y1 or not x2 or not y2:
+                    continue
 
-                    if args.include_stride:
-                        entry = np.expand_dims(np.array([x1, y1, x2, y2]), axis=0)
-                        entries = np.append(entries, entry, axis=0)
-                    else:
-                        width = x2 - x1
-                        height = y2 - y1
-                        entry = np.expand_dims(np.array([-width / 2, -height / 2, width / 2, height / 2]), axis=0)
-                        entries = np.append(entries, entry, axis=0)
+                if args.resize:
+                    img = Image.open(row[0])
+                    scale = compute_resize_scale((img.height, img.width, 1), min_side=args.image_min_side, max_side=args.image_max_side)
+                    x1, y1, x2, y2 = list(map(lambda x: int(x) * scale, row[1:5]))
+
+                max_x = max(x2, max_x)
+                max_y = max(y2, max_y)
+
+                if args.include_stride:
+                    entry = np.expand_dims(np.array([x1, y1, x2, y2]), axis=0)
+                    entries = np.append(entries, entry, axis=0)
+                else:
+                    width = x2 - x1
+                    height = y2 - y1
+                    entry = np.expand_dims(np.array([-width / 2, -height / 2, width / 2, height / 2]), axis=0)
+                    entries = np.append(entries, entry, axis=0)
 
     image_shape = [max_x, max_y]
 
@@ -151,7 +165,7 @@ if __name__ == "__main__":
 
     result = scipy.optimize.differential_evolution(
         lambda x: average_overlap(x, entries, state, image_shape, args.objective, args.ratios, args.include_stride)[0],
-        bounds=bounds, popsize=args.popsize)
+        bounds=bounds, popsize=args.popsize, seed=seed)
 
     if hasattr(result, 'success') and result.success:
         print('Optimization ended successfully!')
