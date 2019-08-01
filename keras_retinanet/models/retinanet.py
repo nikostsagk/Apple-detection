@@ -162,7 +162,7 @@ def __create_pyramid_features(C3, C4, C5, feature_size=256):
     return [P3, P4, P5, P6, P7]
 
 
-def default_submodels(num_classes, num_anchors):
+def default_submodels(num_classes, num_anchors, pyramid_feature_size=256):
     """ Create a list of default submodels used for object detection.
 
     The default submodels contains a regression submodel and a classification submodel.
@@ -170,13 +170,20 @@ def default_submodels(num_classes, num_anchors):
     Args
         num_classes : Number of classes to use.
         num_anchors : Number of base anchors.
+        pyramid_feature_size : The number of filters to expect from the feature pyramid levels.
 
     Returns
         A list of tuple, where the first element is the name of the submodel and the second element is the submodel itself.
     """
     return [
-        ('regression', default_regression_model(4, num_anchors)),
-        ('classification', default_classification_model(num_classes, num_anchors))
+        ('regression', default_regression_model(num_values = 4,
+                                                num_anchors = num_anchors,
+                                                pyramid_feature_size = pyramid_feature_size,
+                                                regression_feature_size = pyramid_feature_size)),
+        ('classification', default_classification_model(num_classes = num_classes,
+                                                        num_anchors = num_anchors,
+                                                        pyramid_feature_size = pyramid_feature_size,
+                                                        classification_feature_size = pyramid_feature_size))
     ]
 
 
@@ -266,17 +273,18 @@ def retinanet(
         ]
         ```
     """
+    feature_size = 256
 
     if num_anchors is None:
         num_anchors = AnchorParameters.default.num_anchors()
 
     if submodels is None:
-        submodels = default_submodels(num_classes, num_anchors)
+        submodels = default_submodels(num_classes, num_anchors, pyramid_feature_size=feature_size)
 
     C3, C4, C5 = backbone_layers
 
     # compute pyramid features as per https://arxiv.org/abs/1708.02002
-    features = create_pyramid_features(C3, C4, C5)
+    features = create_pyramid_features(C3, C4, C5, feature_size=feature_size)
 
     # for all pyramid levels, run available submodels
     pyramids = __build_pyramid(submodels, features)
