@@ -87,7 +87,7 @@ def model_with_weights(model, weights, skip_mismatch):
 def create_models(backbone_retinanet, num_classes, weights, multi_gpu=0,
                   freeze_backbone=False, lr=1e-5, momentum=0.9, sgd=False, 
                   alpha=0.25, gamma=2.0, nms_threshold=0.5, nms_score=0.05, 
-                  nms_detections=300, config=None, regularization=False):
+                  nms_detections=300, config=None, regularization=False, inputs=None):
     """ Creates three models (model, training_model, prediction_model).
 
     Args
@@ -118,11 +118,11 @@ def create_models(backbone_retinanet, num_classes, weights, multi_gpu=0,
     if multi_gpu > 1:
         from keras.utils import multi_gpu_model
         with tf.device('/cpu:0'):
-            model = model_with_weights(backbone_retinanet(num_classes, num_anchors=num_anchors, modifier=modifier), weights=weights, skip_mismatch=True)
+            model = model_with_weights(backbone_retinanet(num_classes, num_anchors=num_anchors, modifier=modifier, inputs=inputs), weights=weights, skip_mismatch=True)
 
         training_model = multi_gpu_model(model, gpus=multi_gpu)
     else:
-        model          = model_with_weights(backbone_retinanet(num_classes, num_anchors=num_anchors, modifier=modifier), weights=weights, skip_mismatch=True)
+        model = model_with_weights(backbone_retinanet(num_classes, num_anchors=num_anchors, modifier=modifier, inputs=inputs), weights=weights, skip_mismatch=True)
         
         # Add weight decay (L2 regularization)
         if regularization:
@@ -542,6 +542,7 @@ def main(args=None):
         model, training_model, prediction_model = create_models(
             backbone_retinanet=backbone.retinanet,
             num_classes=train_generator.num_classes(),
+            inputs=train_generator[0][0].shape[1:],
             weights=weights,
             multi_gpu=args.multi_gpu,
             freeze_backbone=args.freeze_backbone,
