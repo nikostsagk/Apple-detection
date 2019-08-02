@@ -219,7 +219,7 @@ def create_callbacks(model, training_model, prediction_model, validation_generat
     else:
     	checkpoint_path = os.path.join(
             args.snapshot_path,
-            '{backbone}_{dataset_type}_{epochs}.h5'.format(backbone=args.backbone, dataset_type=args.dataset_type, epochs=args.epochs)
+            '{}.h5'.format(args.save_model)
         )
 
     checkpoint = keras.callbacks.ModelCheckpoint(checkpoint_path, verbose=1,
@@ -455,6 +455,7 @@ def parse_args(args):
     parser.add_argument('--snapshot-path',    help='Path to store snapshots of models during training (defaults to \'./snapshots\')', default='./snapshots')
     parser.add_argument('--tensorboard-dir',  help='Log directory for Tensorboard output', default='./logs')
     parser.add_argument('--no-snapshots',     help='Disable saving snapshots.', dest='snapshots', action='store_false')
+    parser.add_argument('--save-model',       help='Name of model', type=str, default='last_snapshot')
     parser.add_argument('--no-evaluation',    help='Disable per epoch evaluation.', dest='evaluation', action='store_false')
     parser.add_argument('--freeze-backbone',  help='Freeze training of backbone layers.', action='store_true')
     parser.add_argument('--random-transform', help='Randomly transform image and annotations.', action='store_true')
