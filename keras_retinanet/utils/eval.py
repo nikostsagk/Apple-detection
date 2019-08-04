@@ -255,7 +255,10 @@ def evaluate(
         pr_curves[label]['precision'] = precision
         pr_curves[label]['recall'] = recall
         pr_curves[label]['f1_score'] = f1_score
-        pr_curves[label]['average_iou'] = average_iou[label].mean()
+        try:
+            pr_curves[label]['average_iou'] = average_iou[label].mean()
+        except:
+            pr_curves[label]['average_iou'] = 0
         pr_curves[label]['TP'] = true_positives[label]
         pr_curves[label]['FP'] = false_positives[label]
 
