@@ -255,12 +255,14 @@ class VisualEffect:
         brightness_delta,
         blurring_chance,
         bgr_permutation_chance,
+        color_jitter_chance,
         hue_delta,
         saturation_factor
     ):
         self.contrast_factor = contrast_factor
         self.brightness_delta = brightness_delta
         self.blurring = True if blurring_chance >= _uniform((0,1)) else False
+        self.jittering = True if color_jitter_chance >= _uniform((0,1)) else False
         self.bgr_permutation = True if bgr_permutation_chance >= _uniform((0,1)) else False
         self.hue_delta = hue_delta
         self.saturation_factor = saturation_factor
@@ -279,6 +281,8 @@ class VisualEffect:
             image = adjust_blurring(image)
         if self.bgr_permutation:
             image = adjust_bgr_order(image)
+        if self.jittering:
+            image = adjust_jittering(image)
 
         if self.hue_delta or self.saturation_factor:
 
@@ -295,12 +299,13 @@ class VisualEffect:
 
 
 def random_visual_effect_generator(
-    contrast_range=(0.9, 1.1),
-    brightness_range=(-.1, .1),
-    blurring_chance=0.25,
-    bgr_permutation_chance=0.25,
-    hue_range=(-0.05, 0.05),
-    saturation_range=(0.95, 1.05)
+    contrast_range=(1.0, 1.0),
+    brightness_range=(0.0, 0.0),
+    blurring_chance=0.0,
+    bgr_permutation_chance=0.0,
+    color_jitter_chance=0.0,
+    hue_range=(0.0, 0.0),
+    saturation_range=(1.0, 1.0)
 ):
     """ Generate visual effect parameters uniformly sampled from the given intervals.
     Args
@@ -323,6 +328,7 @@ def random_visual_effect_generator(
                 brightness_delta=_uniform(brightness_range),
                 blurring_chance=blurring_chance,
                 bgr_permutation_chance=bgr_permutation_chance,
+                color_jitter_chance=color_jitter_chance,
                 hue_delta=_uniform(hue_range),
                 saturation_factor=_uniform(saturation_range),
             )
@@ -364,6 +370,18 @@ def adjust_bgr_order(image):
     """
     bgr_permutation = np.random.choice(3, 3, replace=False)
     return image[...,bgr_permutation]
+
+def adjust_jittering(image):
+    """ Adjust noise jittering in a color channel randomly.
+    Args
+        image: Image to adjust.
+    """
+    noise = np.random.randint(0,50,(image.shape[0], image.shape[1]))
+    channel = np.random.randint(3)
+    jitter = np.zeros_like(image)
+    jitter[..., channel] = noise
+    return cv2.add(image, jitter)
+
 
 
 def adjust_hue(image, delta):

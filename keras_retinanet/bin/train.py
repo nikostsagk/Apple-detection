@@ -238,7 +238,7 @@ def create_callbacks(model, training_model, prediction_model, validation_generat
         mode       = 'max',
         min_delta  = 0.001,
         cooldown   = 0,
-        min_lr     = 0
+        min_lr     = 1e-7
     ))
 
     if args.lr_schedule:
@@ -277,8 +277,9 @@ def create_generators(args, preprocess_image):
         visual_effect_generator = random_visual_effect_generator(
             contrast_range=(0.9, 1.1),
             brightness_range=(-.1, .1),
-            blurring_chance=0.25,
-            bgr_permutation_chance=0.25,
+            blurring_chance=0.50,
+            bgr_permutation_chance=0.50,
+            color_jitter_chance=0.50,
             hue_range=(-0.05, 0.05),
             saturation_range=(0.95, 1.05)
         )

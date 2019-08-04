@@ -48,15 +48,16 @@ def create_generator(args):
     """
     # create random transform generator for augmenting training data
     transform_generator = random_transform_generator(
-        flip_x_chance=0.5, #flip_x_chance=0.5,
-        flip_y_chance=0.5, #flip_y_chance=0.5,
+        flip_x_chance=0.5,
+        flip_y_chance=0.5,
     )
 
     visual_effect_generator = random_visual_effect_generator(
         contrast_range=(0.9, 1.1),
         brightness_range=(-.1, .1),
-        blurring_chance=0.25,
-        bgr_permutation_chance=0.25,
+        blurring_chance=0.5,
+        bgr_permutation_chance=0.5,
+        color_jitter_chance=0.50,
         hue_range=(-0.05, 0.05),
         saturation_range=(0.95, 1.05)
     )
