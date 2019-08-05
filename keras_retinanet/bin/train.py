@@ -277,6 +277,7 @@ def create_generators(args, preprocess_image):
         visual_effect_generator = random_visual_effect_generator(
             contrast_range=(0.9, 1.1),
             brightness_range=(-.1, .1),
+            pca_distortion=0.1,
             blurring_chance=0.50,
             bgr_permutation_chance=0.50,
             color_jitter_chance=0.50,

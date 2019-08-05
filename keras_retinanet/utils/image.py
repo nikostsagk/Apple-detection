@@ -253,6 +253,7 @@ class VisualEffect:
         self,
         contrast_factor,
         brightness_delta,
+        pca_distortion,
         blurring_chance,
         bgr_permutation_chance,
         color_jitter_chance,
@@ -261,6 +262,7 @@ class VisualEffect:
     ):
         self.contrast_factor = contrast_factor
         self.brightness_delta = brightness_delta
+        self.pca_distortion = pca_distortion
         self.blurring = True if blurring_chance >= _uniform((0,1)) else False
         self.jittering = True if color_jitter_chance >= _uniform((0,1)) else False
         self.bgr_permutation = True if bgr_permutation_chance >= _uniform((0,1)) else False
@@ -277,6 +279,8 @@ class VisualEffect:
             image = adjust_contrast(image, self.contrast_factor)
         if self.brightness_delta:
             image = adjust_brightness(image, self.brightness_delta)
+        if self.pca_distortion:
+            image = adjust_pca_distortion(image, self.pca_distortion)
         if self.blurring:
             image = adjust_blurring(image)
         if self.bgr_permutation:
@@ -301,6 +305,7 @@ class VisualEffect:
 def random_visual_effect_generator(
     contrast_range=(1.0, 1.0),
     brightness_range=(0.0, 0.0),
+    pca_distortion=0.0,
     blurring_chance=0.0,
     bgr_permutation_chance=0.0,
     color_jitter_chance=0.0,
@@ -318,6 +323,7 @@ def random_visual_effect_generator(
     """
     _check_range(contrast_range, 0)
     _check_range(brightness_range, -1, 1)
+    _check_range((0,pca_distortion),0)
     _check_range(hue_range, -1, 1)
     _check_range(saturation_range, 0)
 
@@ -327,6 +333,7 @@ def random_visual_effect_generator(
                 contrast_factor=_uniform(contrast_range),
                 brightness_delta=_uniform(brightness_range),
                 blurring_chance=blurring_chance,
+                pca_distortion=pca_distortion,
                 bgr_permutation_chance=bgr_permutation_chance,
                 color_jitter_chance=color_jitter_chance,
                 hue_delta=_uniform(hue_range),
@@ -353,6 +360,30 @@ def adjust_brightness(image, delta):
         delta: Brightness offset between -1 and 1 added to the pixel values.
     """
     return _clip(image + delta * 255)
+
+def adjust_pca_distortion(image, sigma):
+    """ Adjust noise distortion through PCA on an image.
+    Args
+        image: Image to adjust.
+        sigma: Variance of the normal distr. where random values will be drawn from.
+    """
+    h, w, c = image.shape
+    image = image.reshape(-1, c).astype('float32')
+
+    mean = np.mean(image, axis=0)
+    std = np.std(image, axis=0)
+    image = (image - mean) / std
+
+    cov = np.cov(image.T)
+    v, u = np.linalg.eigh(cov)
+    alpha = np.random.normal(0, sigma, c)
+    delta = np.dot(u, alpha * v)
+
+    image += delta
+    image = (image * std) + mean
+    image = image.reshape(h, w, -1)
+    return  _clip(image)
+
 
 def adjust_blurring(image):
     """ Adjust blurring on an image.
