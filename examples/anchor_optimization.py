@@ -15,8 +15,8 @@ from keras_retinanet.utils.image import compute_resize_scale
 
 warnings.simplefilter("ignore")
 
-SIZES = [8, 16 ,32, 64, 128, 256, 512]
-STRIDES = [2, 4, 8, 16, 32, 64, 128]
+SIZES = [32, 64, 128, 256, 512]
+STRIDES = [8, 16, 32, 64, 128]
 state = {'best_result': sys.maxsize}
 
 
@@ -35,7 +35,7 @@ def calculate_config(values, ratio_count):
 
 def base_anchors_for_shape(pyramid_levels=None, anchor_params=None):
     if pyramid_levels is None:
-        pyramid_levels = [2, 3, 4, 5, 6, 7]
+        pyramid_levels = [3, 4, 5, 6, 7]
 
     if anchor_params is None:
         anchor_params = AnchorParameters.default
@@ -101,7 +101,7 @@ if __name__ == "__main__":
     parser.add_argument('--objective', type=str, default='focal',
                         help='Function used to weight the difference between the target and proposed anchors. '
                              'Options: focal, avg, ce.')
-    parser.add_argument('--popsize', type=int, default=15,
+    parser.add_argument('--popsize', type=int, default=20,
                         help='The total population size multiplier used by differential evolution.')
     parser.add_argument('--no-resize', help='Disable image resizing.', dest='resize', action='store_false')
     parser.add_argument('--image-min-side', help='Rescale the image so the smallest side is min_side.', type=int,
@@ -109,6 +109,7 @@ if __name__ == "__main__":
     parser.add_argument('--image-max-side', help='Rescale the image if the largest side is larger than max_side.',
                         type=int, default=1333)
     parser.add_argument('--seed', type=int, help='Seed value to use for differential evolution.')
+    parser.add_argument('--workers', type=int, help='The number of workers to assess the job to.', default=1)
     args = parser.parse_args()
 
     if args.ratios % 2 != 1:
@@ -165,7 +166,7 @@ if __name__ == "__main__":
 
     result = scipy.optimize.differential_evolution(
         lambda x: average_overlap(x, entries, state, image_shape, args.objective, args.ratios, args.include_stride)[0],
-        bounds=bounds, popsize=args.popsize, seed=seed)
+        bounds=bounds, popsize=args.popsize, seed=seed, workers=args.workers)
 
     if hasattr(result, 'success') and result.success:
         print('Optimization ended successfully!')
