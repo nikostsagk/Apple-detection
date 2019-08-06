@@ -53,10 +53,11 @@ def base_anchors_for_shape(pyramid_levels=None, anchor_params=None):
     return all_anchors
 
 
-def average_overlap(values, entries, state, image_shape, mode='focal', ratio_count=3, include_stride=False):
-    anchor_params = calculate_config(values, ratio_count)
+def average_overlap(values):
+    global not_matched
+    anchor_params = calculate_config(values, args.ratios)
 
-    if include_stride:
+    if args.include_stride:
         anchors = anchors_for_shape(image_shape, anchor_params=anchor_params)
     else:
         anchors = base_anchors_for_shape(anchor_params=anchor_params)
@@ -65,11 +66,11 @@ def average_overlap(values, entries, state, image_shape, mode='focal', ratio_cou
     max_overlap = np.amax(overlap, axis=1)
     not_matched = len(np.where(max_overlap < 0.5)[0])
 
-    if mode == 'avg':
+    if args.objective == 'avg':
         result = 1 - np.average(max_overlap)
-    elif mode == 'ce':
+    elif args.objective == 'ce':
         result = np.average(-np.log(max_overlap))
-    elif mode == 'focal':
+    elif args.objective == 'focal':
         result = np.average(-(1 - max_overlap) ** 2 * np.log(max_overlap))
     else:
         raise Exception('Invalid mode.')
@@ -81,14 +82,13 @@ def average_overlap(values, entries, state, image_shape, mode='focal', ratio_cou
         print(f'Ratios: {sorted(np.round(anchor_params.ratios, 3))}')
         print(f'Scales: {sorted(np.round(anchor_params.scales, 3))}')
 
-        if include_stride:
+        if args.include_stride:
             print(f'Average overlap: {np.round(np.average(max_overlap), 3)}')
 
         print(f'Number of labels that don\'t have any matching anchor: {not_matched}')
         print()
 
-    return result, not_matched
-
+    return result
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description='Optimize RetinaNet anchor configuration')
@@ -151,7 +151,7 @@ if __name__ == "__main__":
                     entry = np.expand_dims(np.array([-width / 2, -height / 2, width / 2, height / 2]), axis=0)
                     entries = np.append(entries, entry, axis=0)
 
-    image_shape = [max_x, max_y]
+    image_shape = [max_y, max_x]
 
     print('Optimising anchors.')
 
@@ -164,9 +164,7 @@ if __name__ == "__main__":
     for i in range(args.scales):
         bounds.append((0.4, 2))
 
-    result = scipy.optimize.differential_evolution(
-        lambda x: average_overlap(x, entries, state, image_shape, args.objective, args.ratios, args.include_stride)[0],
-        bounds=bounds, popsize=args.popsize, seed=seed, workers=args.workers)
+    result = scipy.optimize.differential_evolution(average_overlap, bounds=bounds, popsize=args.popsize, seed=seed, workers=args.workers)
 
     if hasattr(result, 'success') and result.success:
         print('Optimization ended successfully!')
@@ -178,8 +176,7 @@ if __name__ == "__main__":
 
     values = result.x
     anchor_params = calculate_config(values, args.ratios)
-    (avg, not_matched) = average_overlap(values, entries, {'best_result': 0}, image_shape,
-                                         'avg', args.ratios, args.include_stride)
+    avg = average_overlap(values)
 
     print()
     print('Final best anchor configuration')
