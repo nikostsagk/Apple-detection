@@ -390,7 +390,8 @@ def adjust_blurring(image):
     Args
         image: Image to adjust.
     """
-    kernel = np.ones((3,3),np.float32)/9
+    kernel_size = np.random.choice([3, 5, 7])
+    kernel = np.ones((kernel_size, kernel_size),np.float32) / (kernel_size ** 2)
     return cv2.filter2D(image,-1,kernel)
 
 
