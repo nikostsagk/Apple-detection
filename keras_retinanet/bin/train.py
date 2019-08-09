@@ -84,10 +84,7 @@ def model_with_weights(model, weights, skip_mismatch):
     return model
 
 
-def create_models(backbone_retinanet, num_classes, weights, multi_gpu=0,
-                  freeze_backbone=False, lr=1e-5, momentum=0.9, sgd=False, 
-                  alpha=0.25, gamma=2.0, nms_threshold=0.5, nms_score=0.05, 
-                  nms_detections=300, config=None, regularization=False, inputs=None):
+def create_models(args, backbone_retinanet, num_classes, weights, inputs=None, config=None):
     """ Creates three models (model, training_model, prediction_model).
 
     Args
@@ -104,7 +101,7 @@ def create_models(backbone_retinanet, num_classes, weights, multi_gpu=0,
         prediction_model : The model wrapped with utility functions to perform object detection (applies regression values and performs NMS).
     """
 
-    modifier = freeze_model if freeze_backbone else None
+    modifier = freeze_model if args.freeze_backbone else None
 
     # load anchor parameters, or pass None (so that defaults will be used)
     anchor_params = None
@@ -115,17 +112,17 @@ def create_models(backbone_retinanet, num_classes, weights, multi_gpu=0,
 
     # Keras recommends initialising a multi-gpu model on the CPU to ease weight sharing, and to prevent OOM errors.
     # optionally wrap in a parallel model
-    if multi_gpu > 1:
+    if args.multi_gpu > 1:
         from keras.utils import multi_gpu_model
         with tf.device('/cpu:0'):
             model = model_with_weights(backbone_retinanet(num_classes, num_anchors=num_anchors, modifier=modifier, inputs=inputs), weights=weights, skip_mismatch=True)
 
-        training_model = multi_gpu_model(model, gpus=multi_gpu)
+        training_model = multi_gpu_model(model, gpus=args.multi_gpu)
     else:
         model = model_with_weights(backbone_retinanet(num_classes, num_anchors=num_anchors, modifier=modifier, inputs=inputs), weights=weights, skip_mismatch=True)
         
         # Add weight decay (L2 regularization)
-        if regularization:
+        if args.regularization:
             for layer in model.layers:
                 layer.kernel_regularizer = keras.regularizers.l2(1e-4)
 
@@ -134,23 +131,27 @@ def create_models(backbone_retinanet, num_classes, weights, multi_gpu=0,
     # make prediction model
     prediction_model = retinanet_bbox(
         model=model,
-        nms_threshold = nms_threshold,
-        score_threshold = nms_score,
-        max_detections = nms_detections,
+        nms_threshold = args.nms_threshold,
+        score_threshold = args.nms_score,
+        max_detections = args.nms_detections,
         anchor_params=anchor_params
         )
 
     # create optimizer
-    if not sgd:
-        optimizer=keras.optimizers.adam(lr=lr)
-    else:
-    	optimizer=keras.optimizers.SGD(lr=lr, momentum=momentum, clipnorm=1.)
+    if args.optimizer == 'adam':
+        optimizer = keras.optimizers.adam(lr=args.lr)
+    elif args.optimizer == 'sgd':
+    	optimizer = keras.optimizers.SGD(lr=args.lr, momentum=args.momentum)
+    elif args.optimizer == 'adagrad':
+        optimizer = keras.optimizers.Adagrad(lr=0.01, epsilon=None, decay=0.0)
+    elif args.optimizer == 'adadelta':
+        optimizer = keras.optimizers.Adadelta(lr=1.0, rho=0.95, epsilon=None, decay=0.0)
 
     # compile model
     training_model.compile(
         loss={
             'regression'    : losses.smooth_l1(),
-            'classification': losses.focal(alpha=alpha, gamma=gamma)
+            'classification': losses.focal(alpha=args.alpha, gamma=args.gamma)
         },
         optimizer=optimizer        
     )
@@ -271,19 +272,12 @@ def create_generators(args, preprocess_image):
     # create random transform generator for augmenting training data
     if args.random_transform:
         transform_generator = random_transform_generator(
-            flip_x_chance=0.5,
-            flip_y_chance=0.5,
+            flip_x_chance=0.5
         )
         visual_effect_generator = random_visual_effect_generator(
-            contrast_range=(0.9, 1.1),
-            brightness_range=(-.1, .1),
-            pca_distortion=0.1,
-            blurring_chance=0.50,
-            bgr_permutation_chance=0.50,
-            color_jitter_chance=0.50,
-            hue_range=(-0.05, 0.05),
-            saturation_range=(0.95, 1.05)
+            pca_distortion=0.1
         )
+
     else:
         transform_generator = None
         visual_effect_generator = None
@@ -472,7 +466,7 @@ def parse_args(args):
     parser.add_argument('--lr', help='Learning rate.', type=float, default=1e-5)
     parser.add_argument('--lr-schedule', help='Learning rate schedule.', action='store_true')
     parser.add_argument('--momentum', help='Momentum.', type=float, default=0.9)
-    parser.add_argument('--sgd', help='Change optimizer to SGD. Default is Adam.', action='store_true')
+    parser.add_argument('--optimizer', help='Choose optimizer. Default is Adam.', type=str, default='adam')
     parser.add_argument('--regularization', help='Add regularization to layers (nothing if layers are fozen).', action='store_true')
 
     #Loss arguments
@@ -543,23 +537,13 @@ def main(args=None):
 
         print('Creating model, this may take a second...')
         model, training_model, prediction_model = create_models(
+            args,
             backbone_retinanet=backbone.retinanet,
             num_classes=train_generator.num_classes(),
-            inputs=train_generator[0][0].shape[1:],
             weights=weights,
-            multi_gpu=args.multi_gpu,
-            freeze_backbone=args.freeze_backbone,
-            lr=args.lr,
-            momentum = args.momentum,
-            sgd = args.sgd,
-            alpha = args.alpha,
-            gamma = args.gamma,
-            nms_threshold = args.nms_threshold,
-            nms_score = args.nms_score,
-            nms_detections = args.nms_detections,
-            config=args.config,
-            regularization=args.regularization
-        )
+            inputs=train_generator[0][0].shape[1:],
+            config=args.config
+            )
 
     # print model summary
     print(model.summary())
