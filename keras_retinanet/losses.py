@@ -15,6 +15,7 @@ limitations under the License.
 """
 
 import keras
+import tensorflow as tf
 from . import backend
 
 
@@ -28,6 +29,9 @@ def focal(alpha=0.25, gamma=2.0):
     Returns
         A functor that computes the focal loss using the alpha and gamma.
     """
+
+    average_focal = tf.Variable(1.0)
+
     def _focal(y_true, y_pred):
         """ Compute the focal loss given the target tensor and the predicted tensor.
 
@@ -60,9 +64,12 @@ def focal(alpha=0.25, gamma=2.0):
         # compute the normalizer: the number of positive anchors
         normalizer = backend.where(keras.backend.equal(anchor_state, 1))
         normalizer = keras.backend.cast(keras.backend.shape(normalizer)[0], keras.backend.floatx())
-        normalizer = keras.backend.maximum(keras.backend.cast_to_floatx(1.0), normalizer)
+        normalizer = backend.where(keras.backend.less(normalizer, 1.0), average_focal, normalizer)
 
-        return keras.backend.sum(cls_loss) / normalizer
+        assign_op_focal = average_focal.assign(0.99 * average_focal.value() + 0.01 * normalizer)
+
+        with tf.control_dependencies([assign_op_focal]):
+            return keras.backend.sum(cls_loss) / normalizer
 
     return _focal
 
@@ -77,6 +84,7 @@ def smooth_l1(sigma=3.0):
         A functor for computing the smooth L1 loss given target data and predicted data.
     """
     sigma_squared = sigma ** 2
+    average_smooth = tf.Variable(1.0)
 
     def _smooth_l1(y_true, y_pred):
         """ Compute the smooth L1 loss of y_pred w.r.t. y_true.
@@ -112,6 +120,11 @@ def smooth_l1(sigma=3.0):
         # compute the normalizer: the number of positive anchors
         normalizer = keras.backend.maximum(1, keras.backend.shape(indices)[0])
         normalizer = keras.backend.cast(normalizer, dtype=keras.backend.floatx())
-        return keras.backend.sum(regression_loss) / normalizer
+        normalizer = backend.where(keras.backend.less(normalizer, 1.0), average_smooth, normalizer)
+
+        assign_op_smooth = average_smooth.assign(0.99 * average_smooth.value() + 0.01 * normalizer)
+
+        with tf.control_dependencies([assign_op_smooth]):
+            return keras.backend.sum(regression_loss) / normalizer
 
     return _smooth_l1
