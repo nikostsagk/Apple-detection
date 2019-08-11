@@ -218,11 +218,11 @@ def anchors_for_shape(
     """
 
     if pyramid_levels is None:
-        pyramid_levels = ['block3_pool', 'P4', 'P5']
+        pyramid_levels = ['block3_pool', 'C4_reduced', 'C5_reduced']
 
     if anchor_params is None:
         anchor_params = AnchorParameters.default
-
+git
     if shapes_callback is None:
         shapes_callback = guess_shapes
     image_shapes = shapes_callback(image_shape, pyramid_levels)

@@ -317,7 +317,7 @@ def retinanet_bbox(
         assert_training_model(model)
 
     # compute the anchors
-    features = [model.get_layer(p_name).output for p_name in ['block3_pool', 'P4', 'P5']]
+    features = [model.get_layer(p_name).output for p_name in ['block3_pool', 'C4_reduced', 'C5_reduced']]
     anchors  = __build_anchors(anchor_params, features)
 
     # we expect the anchors, regression and classification values as first output
