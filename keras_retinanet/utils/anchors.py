@@ -194,7 +194,6 @@ def guess_shapes(image_shape, pyramid_levels):
         A list of image shapes at each pyramid level.
     """
     image_shape = np.array(image_shape[:2])
-    pyramid_levels = [3, 4, 5]
     image_shapes = [(image_shape + 2 ** x - 1) // (2 ** x) for x in pyramid_levels]
     return image_shapes
 
