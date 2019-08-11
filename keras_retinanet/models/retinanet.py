@@ -157,14 +157,14 @@ def default_submodels(num_classes, num_anchors, pyramid_feature_size=256):
     Returns
         A list of tuple, where the first element is the name of the submodel and the second element is the submodel itself.
     """
-    return ('regression', default_regression_model(num_values = 4,
+    return (('regression', default_regression_model(num_values = 4,
                                                 num_anchors = num_anchors,
                                                 pyramid_feature_size = pyramid_feature_size,
-                                                regression_feature_size = pyramid_feature_size)),
+                                                regression_feature_size = pyramid_feature_size)), \
             ('classification', default_classification_model(num_classes = num_classes,
                                                         num_anchors = num_anchors,
                                                         pyramid_feature_size = pyramid_feature_size,
-                                                        classification_feature_size = pyramid_feature_size))
+                                                        classification_feature_size = pyramid_feature_size)))
     
 
 
@@ -179,7 +179,7 @@ def __build_model_pyramid(name, model, features):
     Returns
         A tensor containing the response from the submodel on the FPN features.
     """
-    return keras.layers.Concatenate(axis=1, name=name)([model(f) for f in features])
+    return keras.layers.Concatenate(axis=1, name=name)([m[1](f) for m, f in zip(model, features)])
 
 
 def __build_pyramid(models, features):
@@ -192,8 +192,13 @@ def __build_pyramid(models, features):
     Returns
         A list of tensors, one for each submodel.
     """
-    return [__build_model_pyramid(n, m, features[i]) for i, (n, m) in enumerate(models)]
-
+    r = []
+    c = []
+    for m in models:
+        r.append(m[0])
+        c.append(m[1])
+    print(__build_model_pyramid('regression', r, features))
+    return [__build_model_pyramid('regression', r, features), __build_model_pyramid('classification', c, features)]
 
 def __build_anchors(anchor_parameters, features):
     """ Builds anchors for the shape of the features from FPN.
@@ -271,6 +276,7 @@ def retinanet(
 
     # for all pyramid levels, run available submodels
     pyramids = __build_pyramid(submodels, features)
+    print(pyramids)
 
     return keras.models.Model(inputs=inputs, outputs=pyramids, name=name)
 
