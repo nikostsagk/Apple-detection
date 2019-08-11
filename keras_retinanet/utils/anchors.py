@@ -43,7 +43,7 @@ class AnchorParameters:
 The default anchor parameters.
 """
 AnchorParameters.default = AnchorParameters(
-    sizes   = [32, 64, 128, 256, 512],
+    sizes   = [32, 64, 128],
     strides = [8, 16, 32, 64, 128],
     ratios  = np.array([0.5, 1, 2], keras.backend.floatx()),
     scales  = np.array([2 ** 0, 2 ** (1.0 / 3.0), 2 ** (2.0 / 3.0)], keras.backend.floatx()),
@@ -177,7 +177,7 @@ def make_shapes_callback(model):
     """
     def get_shapes(image_shape, pyramid_levels):
         shape = layer_shapes(image_shape, model)
-        image_shapes = [shape["P{}".format(level)][1:3] for level in pyramid_levels]
+        image_shapes = [shape[level][1:3] for level in pyramid_levels]
         return image_shapes
 
     return get_shapes
@@ -217,7 +217,7 @@ def anchors_for_shape(
     """
 
     if pyramid_levels is None:
-        pyramid_levels = [3, 4, 5, 6, 7]
+        pyramid_levels = ['block3_pool', 'P4', 'P5']
 
     if anchor_params is None:
         anchor_params = AnchorParameters.default
