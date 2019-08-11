@@ -23,6 +23,13 @@ def freeze(model):
     This function modifies the given model in-place,
     but it also returns the modified model to allow easy chaining with other functions.
     """
+    VGG13_LAYERS = ['block1_conv2', 'block2_conv2']
+    VGG16_LAYERS = ['block3_conv3', 'block4_conv3', 'block5_conv3']
+    VGG19_LAYERS = ['block3_conv4', 'block4_conv4', 'block5_conv4']
+
+
     for layer in model.layers:
-        layer.trainable = False
+    	layer.trainable = False
+    	if layer.name is in VGG13_LAYERS:
+        	layer.trainable = True
     return model
