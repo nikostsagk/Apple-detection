@@ -27,7 +27,7 @@ def default_classification_model(
     pyramid_feature_size=256,
     prior_probability=0.01,
     classification_feature_size=256,
-    name='classification_submodel'
+    name=''
 ):
     """ Creates the default regression submodel.
 
@@ -75,11 +75,10 @@ def default_classification_model(
         outputs = keras.layers.Permute((2, 3, 1), name='pyramid_classification_permute')(outputs)
     outputs = keras.layers.Reshape((-1, num_classes), name='pyramid_classification_reshape')(outputs)
     outputs = keras.layers.Activation('sigmoid', name='pyramid_classification_sigmoid')(outputs)
+    return keras.models.Model(inputs=inputs, outputs=outputs, name='classification_submodel'+str(name))
 
-    return keras.models.Model(inputs=inputs, outputs=outputs, name=name)
 
-
-def default_regression_model(num_values, num_anchors, pyramid_feature_size=256, regression_feature_size=256, name='regression_submodel'):
+def default_regression_model(num_values, num_anchors, pyramid_feature_size=256, regression_feature_size=256, name=''):
     """ Creates the default regression submodel.
 
     Args
@@ -120,8 +119,7 @@ def default_regression_model(num_values, num_anchors, pyramid_feature_size=256, 
     if keras.backend.image_data_format() == 'channels_first':
         outputs = keras.layers.Permute((2, 3, 1), name='pyramid_regression_permute')(outputs)
     outputs = keras.layers.Reshape((-1, num_values), name='pyramid_regression_reshape')(outputs)
-
-    return keras.models.Model(inputs=inputs, outputs=outputs, name=name)
+    return keras.models.Model(inputs=inputs, outputs=outputs, name='regression_submodel'+str(name))
 
 
 def __create_pyramid_features(C3, C4, C5, feature_size=256):
@@ -144,7 +142,7 @@ def __create_pyramid_features(C3, C4, C5, feature_size=256):
     return [C3, C4, C5]
 
 
-def default_submodels(num_classes, num_anchors, pyramid_feature_size=256):
+def default_submodels(num_classes, num_anchors, pyramid_feature_size=256, name=''):
     """ Create a list of default submodels used for object detection.
 
     The default submodels contains a regression submodel and a classification submodel.
@@ -160,11 +158,13 @@ def default_submodels(num_classes, num_anchors, pyramid_feature_size=256):
     return (('regression', default_regression_model(num_values = 4,
                                                 num_anchors = num_anchors,
                                                 pyramid_feature_size = pyramid_feature_size,
-                                                regression_feature_size = pyramid_feature_size)), \
+                                                regression_feature_size = pyramid_feature_size,
+                                                name = name)), \
             ('classification', default_classification_model(num_classes = num_classes,
                                                         num_anchors = num_anchors,
                                                         pyramid_feature_size = pyramid_feature_size,
-                                                        classification_feature_size = pyramid_feature_size)))
+                                                        classification_feature_size = pyramid_feature_size,
+                                                        name = name)))
     
 
 
@@ -197,7 +197,7 @@ def __build_pyramid(models, features):
     for m in models:
         r.append(m[0])
         c.append(m[1])
-    print(__build_model_pyramid('regression', r, features))
+
     return [__build_model_pyramid('regression', r, features), __build_model_pyramid('classification', c, features)]
 
 def __build_anchors(anchor_parameters, features):
@@ -266,8 +266,8 @@ def retinanet(
 
     if submodels is None:
         submodels = []
-        for fs in feature_size:
-            submodels.append(default_submodels(num_classes, num_anchors, pyramid_feature_size=fs))
+        for i, fs in enumerate(feature_size):
+            submodels.append(default_submodels(num_classes, num_anchors, pyramid_feature_size=fs, name=i))
 
     C3, C4, C5 = backbone_layers
 
@@ -276,7 +276,6 @@ def retinanet(
 
     # for all pyramid levels, run available submodels
     pyramids = __build_pyramid(submodels, features)
-    print(pyramids)
 
     return keras.models.Model(inputs=inputs, outputs=pyramids, name=name)
 
