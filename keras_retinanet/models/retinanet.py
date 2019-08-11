@@ -157,7 +157,7 @@ def default_submodels(num_classes, num_anchors, pyramid_feature_size=256):
     Returns
         A list of tuple, where the first element is the name of the submodel and the second element is the submodel itself.
     """
-    return [
+    return 
         ('regression', default_regression_model(num_values = 4,
                                                 num_anchors = num_anchors,
                                                 pyramid_feature_size = pyramid_feature_size,
@@ -166,7 +166,7 @@ def default_submodels(num_classes, num_anchors, pyramid_feature_size=256):
                                                         num_anchors = num_anchors,
                                                         pyramid_feature_size = pyramid_feature_size,
                                                         classification_feature_size = pyramid_feature_size))
-    ]
+    
 
 
 def __build_model_pyramid(name, model, features):
@@ -193,7 +193,7 @@ def __build_pyramid(models, features):
     Returns
         A list of tensors, one for each submodel.
     """
-    return [__build_model_pyramid(n, m, features) for n, m in models]
+    return [__build_model_pyramid(n, m, features[i]) for i, (n, m) in enumerate(models)]
 
 
 def __build_anchors(anchor_parameters, features):
@@ -255,13 +255,15 @@ def retinanet(
         ]
         ```
     """
-    feature_size = 256
+    feature_size = [256, 512, 512]
 
     if num_anchors is None:
         num_anchors = AnchorParameters.default.num_anchors()
 
     if submodels is None:
-        submodels = default_submodels(num_classes, num_anchors, pyramid_feature_size=feature_size)
+        submodels = []
+        for fs in feature_size:
+            submodels.append(default_submodels(num_classes, num_anchors, pyramid_feature_size=fs))
 
     C3, C4, C5 = backbone_layers
 
@@ -317,7 +319,7 @@ def retinanet_bbox(
         assert_training_model(model)
 
     # compute the anchors
-    features = [model.get_layer(p_name).output for p_name in ['block3_pool', 'P5', 'P6']]
+    features = [model.get_layer(p_name).output for p_name in ['block3_pool', 'P4', 'P5']]
     anchors  = __build_anchors(anchor_params, features)
 
     # we expect the anchors, regression and classification values as first output
