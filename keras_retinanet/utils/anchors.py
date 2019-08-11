@@ -194,6 +194,7 @@ def guess_shapes(image_shape, pyramid_levels):
         A list of image shapes at each pyramid level.
     """
     image_shape = np.array(image_shape[:2])
+    pyramid_levels = [3, 4, 5]
     image_shapes = [(image_shape + 2 ** x - 1) // (2 ** x) for x in pyramid_levels]
     return image_shapes
 
@@ -217,7 +218,7 @@ def anchors_for_shape(
     """
 
     if pyramid_levels is None:
-        pyramid_levels = ['block3_pool', 'P4', 'P5']
+        pyramid_levels = ['block3_pool', 'block4_pool', 'block5_pool']
 
     if anchor_params is None:
         anchor_params = AnchorParameters.default

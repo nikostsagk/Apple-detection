@@ -136,12 +136,12 @@ def __create_pyramid_features(C3, C4, C5, feature_size=256):
     Returns
         A list of feature levels [P3, P4, P5, P6, P7].
     """
-    P5           = keras.layers.Conv2D(feature_size, kernel_size=1, strides=1, padding='same', name='C5_reduced')(C5)
-    P4           = keras.layers.Conv2D(feature_size, kernel_size=1, strides=1, padding='same', name='C4_reduced')(C4)
+    #P5           = keras.layers.Conv2D(feature_size, kernel_size=1, strides=1, padding='same', name='C5_reduced')(C5)
+    #P4           = keras.layers.Conv2D(feature_size, kernel_size=1, strides=1, padding='same', name='C4_reduced')(C4)
     #if features != C3_reduced kernels
     #P3           = keras.layers.Conv2D(feature_size, kernel_size=1, strides=1, padding='same', name='C3_reduced')(C3)
 
-    return [C3, P4, P5]
+    return [C3, C4, C5]
 
 
 def default_submodels(num_classes, num_anchors, pyramid_feature_size=256):
@@ -157,12 +157,11 @@ def default_submodels(num_classes, num_anchors, pyramid_feature_size=256):
     Returns
         A list of tuple, where the first element is the name of the submodel and the second element is the submodel itself.
     """
-    return 
-        ('regression', default_regression_model(num_values = 4,
+    return ('regression', default_regression_model(num_values = 4,
                                                 num_anchors = num_anchors,
                                                 pyramid_feature_size = pyramid_feature_size,
                                                 regression_feature_size = pyramid_feature_size)),
-        ('classification', default_classification_model(num_classes = num_classes,
+            ('classification', default_classification_model(num_classes = num_classes,
                                                         num_anchors = num_anchors,
                                                         pyramid_feature_size = pyramid_feature_size,
                                                         classification_feature_size = pyramid_feature_size))
@@ -319,7 +318,7 @@ def retinanet_bbox(
         assert_training_model(model)
 
     # compute the anchors
-    features = [model.get_layer(p_name).output for p_name in ['block3_pool', 'P4', 'P5']]
+    features = [model.get_layer(p_name).output for p_name in ['block3_pool', 'block4_pool', 'block5_pool']]
     anchors  = __build_anchors(anchor_params, features)
 
     # we expect the anchors, regression and classification values as first output
