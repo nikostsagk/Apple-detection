@@ -232,14 +232,14 @@ def create_callbacks(model, training_model, prediction_model, validation_generat
     callbacks.append(checkpoint)
 
     callbacks.append(keras.callbacks.ReduceLROnPlateau(
-        monitor    = 'mF1',
+        monitor    = 'loss',
         factor     = 0.1,
         patience   = 2,
         verbose    = 1,
-        mode       = 'max',
+        mode       = 'auto',
         min_delta  = 0.001,
         cooldown   = 0,
-        min_lr     = 1e-7
+        min_lr     = 0
     ))
 
     if args.lr_schedule:
@@ -275,7 +275,11 @@ def create_generators(args, preprocess_image):
             flip_x_chance=0.5
         )
         visual_effect_generator = random_visual_effect_generator(
-            pca_distortion=0.1
+            pca_distortion=0.1,
+            contrast_range=(0.9, 1.1),
+            brightness_range=(-.1, .1),
+            hue_range=(-0.05, 0.05),
+            saturation_range=(0.95, 1.05)
         )
 
     else:

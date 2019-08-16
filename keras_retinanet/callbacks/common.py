@@ -2,16 +2,16 @@ import keras.callbacks
 import numpy as np
 
 def default_lr_scheduler(
-    base_lr = 0.01,
-    steps = np.array([7, 12])
+    base_lr = 1e-5,
+    steps = np.array([15, 25])
     ):
 
     def default_lr_scheduler_(epoch, lr):
 
         if (epoch > steps[0]) and (epoch <= steps[1]):
-            lr = base_lr / 10.0
+            lr = base_lr * 1e-1
         elif epoch > steps[1]:
-            lr = base_lr / 100.0
+            lr = base_lr * 1e-2
 
         print('Learning rate: ', lr)
         return lr
