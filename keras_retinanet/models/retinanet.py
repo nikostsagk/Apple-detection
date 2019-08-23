@@ -132,14 +132,25 @@ def __create_pyramid_features(C3, C4, C5, feature_size=256):
         feature_size : The feature size to use for the resulting feature levels.
 
     Returns
-        A list of feature levels [P3, P4, P5, P6, P7].
+        A list of feature levels [P3, P4, P5].
     """
-    #P5           = keras.layers.Conv2D(feature_size, kernel_size=1, strides=1, padding='same', name='C5_reduced')(C5)
-    #P4           = keras.layers.Conv2D(feature_size, kernel_size=1, strides=1, padding='same', name='C4_reduced')(C4)
-    #if features != C3_reduced kernels
-    #P3           = keras.layers.Conv2D(feature_size, kernel_size=1, strides=1, padding='same', name='C3_reduced')(C3)
+    # upsample C5 to get P5 from the FPN paper
+    P5           = keras.layers.Conv2D(feature_size, kernel_size=1, strides=1, padding='same', name='C5_reduced')(C5)
+    P5_upsampled = layers.UpsampleLike(name='P5_upsampled')([P5, C4])
+    P5           = keras.layers.Conv2D(feature_size, kernel_size=3, strides=1, padding='same', name='P5')(P5)
 
-    return [C3, C4, C5]
+    # add P5 elementwise to C4
+    P4           = keras.layers.Conv2D(feature_size, kernel_size=1, strides=1, padding='same', name='C4_reduced')(C4)
+    P4           = keras.layers.Add(name='P4_merged')([P5_upsampled, P4])
+    P4_upsampled = layers.UpsampleLike(name='P4_upsampled')([P4, C3])
+    P4           = keras.layers.Conv2D(feature_size, kernel_size=3, strides=1, padding='same', name='P4')(P4)
+
+    # add P4 elementwise to C3
+    P3 = keras.layers.Conv2D(feature_size, kernel_size=1, strides=1, padding='same', name='C3_reduced')(C3)
+    P3 = keras.layers.Add(name='P3_merged')([P4_upsampled, P3])
+    P3 = keras.layers.Conv2D(feature_size, kernel_size=3, strides=1, padding='same', name='P3')(P3)
+
+    return [P3, P4, P5]
 
 
 def default_submodels(num_classes, num_anchors, pyramid_feature_size=256, name=''):
@@ -259,7 +270,7 @@ def retinanet(
         ]
         ```
     """
-    feature_size = [256, 512, 512]
+    feature_size = [256, 256, 256]
 
     if num_anchors is None:
         num_anchors = AnchorParameters.default.num_anchors()
@@ -323,7 +334,7 @@ def retinanet_bbox(
         assert_training_model(model)
 
     # compute the anchors
-    features = [model.get_layer(p_name).output for p_name in ['block3_pool', 'block4_pool', 'block5_pool']]
+    features = [model.get_layer(p_name).output for p_name in ['P3', 'P4', 'P5']]
     anchors  = __build_anchors(anchor_params, features)
 
     # we expect the anchors, regression and classification values as first output

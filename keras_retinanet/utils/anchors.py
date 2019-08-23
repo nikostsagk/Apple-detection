@@ -218,7 +218,7 @@ def anchors_for_shape(
     """
 
     if pyramid_levels is None:
-        pyramid_levels = ['block3_pool', 'block4_pool', 'block5_pool']
+        pyramid_levels = ['P3', 'P4', 'P5']
 
     if anchor_params is None:
         anchor_params = AnchorParameters.default
