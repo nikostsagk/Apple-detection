@@ -105,9 +105,12 @@ def _get_detections(generator, model, score_threshold=0.05, max_detections=100, 
         image_detections = np.concatenate([image_boxes, np.expand_dims(image_scores, axis=1), np.expand_dims(image_labels, axis=1)], axis=1)
 
         if save_path is not None:
-            boxes *= scale
-            raw_image = cv2.resize(raw_image, raw_image.shape[::-1][1:])
-            draw_annotations(raw_image, generator.load_annotations(i), color=(0,255,0), label_to_name=generator.label_to_name)
+            image_boxes *= scale
+            rescaled_annot = {}
+            rescaled_annot['labels'] = generator.load_annotations(i)['labels']
+            rescaled_annot['bboxes'] = np.asarray([np.multiply(x,scale) for x in generator.load_annotations(i)['bboxes']])
+            raw_image = cv2.resize(raw_image, None, fx=scale, fy=scale)
+            draw_annotations(raw_image, rescaled_annot, color=(0,255,0), label_to_name=generator.label_to_name)
             draw_detections(raw_image, image_boxes, image_scores, image_labels, color=(0,0,255), label_to_name=generator.label_to_name, score_threshold=score_threshold)
 
             cv2.imwrite(os.path.join(save_path, '{}.png'.format(i)), raw_image)

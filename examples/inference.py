@@ -9,10 +9,11 @@
 import keras
 
 # import keras_retinanet
-from keras_retinanet import models
+from ..keras_retinanet import models
 from keras_retinanet.utils.image import read_image_bgr, preprocess_image, resize_image
 from keras_retinanet.utils.visualization import draw_box, draw_caption
 from keras_retinanet.utils.colors import label_color
+from keras_retinanet.utils.config import read_config_file, parse_anchor_parameters
 
 # import miscellaneous modules
 import matplotlib.pyplot as plt
@@ -56,11 +57,13 @@ keras.backend.tensorflow_backend.set_session(get_session())
 #	print('Model to path is missing.ß')
 
 # load retinanet model
-model = models.load_model('../results/test_02/after_10_init_epochs/vgg16_csv_08.h5', backbone_name='vgg16')
+model = models.load_model('../results/peak_detection/train_val_800/vgg16_csv_23.h5', backbone_name='vgg16')
 
 # if the model is not converted to an inference model, use the line below
 # see: https://github.com/fizyr/keras-retinanet#converting-a-training-model-to-inference-model
-model = models.convert_model(model)
+
+anchor_params = parse_anchor_parameters(read_config_file('config_512.ini'))
+model = models.convert_model(model, nms_threshold=0.3, anchor_params=anchor_params)
 print(model.summary())
 
 # load label to names mapping for visualization purposes
@@ -68,7 +71,7 @@ labels_to_names = {0: 'apple'}
 
 
 # load image
-image_name = '20130320T012856.619229_62.png'
+image_name = '20130320T004433.707425.Cam6_54.png'
 image = read_image_bgr(image_name)
 
 # copy to draw on
