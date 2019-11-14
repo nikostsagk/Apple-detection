@@ -1,3 +1,6 @@
 [submodule "tests/test-data"]
 	path = tests/test-data
 	url = https://github.com/fizyr/keras-retinanet-test-data.git
+[submodule "msc-project-report"]
+	path = msc-project-report
+	url = https://github.com/nikostsagk/msc-project-report.git
